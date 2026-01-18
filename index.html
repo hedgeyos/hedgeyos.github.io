@@ -103,7 +103,7 @@
     #desktop-icons{
       position:absolute;
       inset: var(--menubar-h) 0 0 0;
-      pointer-events:none;
+      pointer-events:none; /* icons themselves re-enable */
     }
 
     .desktop-icon{
@@ -201,7 +201,7 @@
       padding:6px 0;
       display:none;
       z-index:10001;
-      color: var(--menu-text);
+      color: var(--menu-text); /* IMPORTANT: light mode readable */
     }
     .menu.active .dropdown{ display:block; }
 
@@ -268,7 +268,7 @@
         inset -1px -1px 0 var(--win-shadow);
       border-radius: var(--win-radius);
       overflow:hidden;
-      touch-action:none;
+      touch-action:none; /* important for pointer dragging on mobile */
     }
     .window.inactive{
       filter: saturate(0.8);
@@ -360,19 +360,20 @@
     }
 
     .window-inner{
+      /* CRITICAL FIX: make content layout stable */
       display:flex;
       flex-direction:column;
       height: calc(100% - var(--win-title-h));
-      min-height:0;
+      min-height:0; /* allow flex children to shrink properly */
     }
 
     .window-body{
       flex:1 1 auto;
-      min-height:0;
+      min-height:0; /* IMPORTANT for scroll areas */
       position:relative;
       padding:10px;
       box-sizing:border-box;
-      overflow:hidden;
+      overflow:hidden; /* internal scrollers handle overflow */
     }
 
     .statusbar{
@@ -417,6 +418,7 @@
       opacity:0.9;
     }
 
+    /* Generic UI bits */
     .btn{
       background: var(--btn-bg);
       border:1px solid var(--btn-border);
@@ -472,6 +474,7 @@
     }
     .col-name{ flex: 1 1 auto; }
     .files-list{
+      /* FIX: scroll inside, not spilling out */
       flex: 1 1 auto;
       min-height:0;
       overflow:auto;
@@ -607,6 +610,7 @@
       font-family: var(--mono);
     }
 
+    /* Mobile sanity */
     @media (max-width: 520px){
       .menu{ padding:0 8px; }
       .dropdown{ min-width: 200px; }
@@ -637,7 +641,9 @@
         </div>
 
         <div class="menu" data-menu="apps">Apps
-          <div class="dropdown" id="appsDropdown"></div>
+          <div class="dropdown" id="appsDropdown">
+            <!-- populated by JS -->
+          </div>
         </div>
       </div>
 
@@ -667,341 +673,7 @@
     </div>
   </div>
 
-  <script type="module">
-    /**
-     * embedify.js
-     * Convert common media URLs into iframe-embed endpoints.
-     *
-     * Works in browser or Node (Node 18+ for URL).
-     *
-     * Usage:
-     *   const r = toEmbedUrl("https://youtu.be/Oq9JXXrhOt8?si=xxx");
-     *   if (r.ok) iframe.src = r.embedUrl;
-     */
-
-    function safeURL(input) {
-      try {
-        // Allow bare domains like "youtube.com/watch?v=..." by forcing scheme
-        const trimmed = String(input || "").trim();
-        if (!trimmed) return null;
-
-        // If it already looks like a URL but missing scheme, prepend https://
-        const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed);
-        const maybeUrl = hasScheme ? trimmed : `https://${trimmed}`;
-        return new URL(maybeUrl);
-      } catch {
-        return null;
-      }
-    }
-
-    function normHost(hostname) {
-      return hostname.toLowerCase().replace(/^www\./, "");
-    }
-
-    function pickFirstNonEmpty(...vals) {
-      for (const v of vals) {
-        if (typeof v === "string" && v.trim()) return v.trim();
-      }
-      return "";
-    }
-
-    /**
-     * Extract YouTube video id from multiple URL formats.
-     */
-    function parseYouTube(u) {
-      const host = normHost(u.hostname);
-      const path = u.pathname;
-
-      // youtu.be/<id>
-      if (host === "youtu.be") {
-        const id = path.split("/").filter(Boolean)[0] || "";
-        return id ? { id } : null;
-      }
-
-      // youtube.com/watch?v=<id>
-      if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
-        const v = u.searchParams.get("v");
-        if (v) return { id: v };
-
-        // youtube.com/embed/<id>
-        if (path.startsWith("/embed/")) {
-          const id = path.split("/")[2] || "";
-          return id ? { id } : null;
-        }
-
-        // youtube.com/shorts/<id>
-        if (path.startsWith("/shorts/")) {
-          const id = path.split("/")[2] || "";
-          return id ? { id } : null;
-        }
-
-        // youtube.com/live/<id>
-        if (path.startsWith("/live/")) {
-          const id = path.split("/")[2] || "";
-          return id ? { id } : null;
-        }
-      }
-
-      return null;
-    }
-
-    /**
-     * Extract Vimeo id from vimeo.com/<id> or player.vimeo.com/video/<id>.
-     */
-    function parseVimeo(u) {
-      const host = normHost(u.hostname);
-      const parts = u.pathname.split("/").filter(Boolean);
-
-      if (host === "vimeo.com") {
-        // vimeo.com/<id>
-        const id = parts[0] || "";
-        return /^\d+$/.test(id) ? { id } : null;
-      }
-
-      if (host === "player.vimeo.com") {
-        // player.vimeo.com/video/<id>
-        if (parts[0] === "video" && /^\d+$/.test(parts[1] || "")) {
-          return { id: parts[1] };
-        }
-      }
-
-      return null;
-    }
-
-    /**
-     * Spotify: supports track/album/playlist/episode/show
-     * Examples:
-     *  https://open.spotify.com/track/<id>
-     *  spotify:track:<id>
-     */
-    function parseSpotify(input, u) {
-      const raw = String(input || "").trim();
-
-      // spotify URI form
-      if (raw.toLowerCase().startsWith("spotify:")) {
-        // spotify:track:<id>
-        const parts = raw.split(":");
-        if (parts.length >= 3) {
-          const type = parts[1];
-          const id = parts[2];
-          if (type && id) return { type, id };
-        }
-        return null;
-      }
-
-      const host = normHost(u.hostname);
-      if (host !== "open.spotify.com") return null;
-
-      const parts = u.pathname.split("/").filter(Boolean);
-      const type = parts[0] || "";
-      const id = parts[1] || "";
-      if (!type || !id) return null;
-
-      const allowed = new Set(["track", "album", "playlist", "episode", "show", "artist"]);
-      if (!allowed.has(type)) return null;
-
-      return { type, id };
-    }
-
-    /**
-     * SoundCloud: official embed is via w.soundcloud.com/player?url=<encoded original url>
-     * We'll accept soundcloud.com/* and on.soundcloud.com/*
-     */
-    function parseSoundCloud(u) {
-      const host = normHost(u.hostname);
-      if (host === "soundcloud.com" || host === "on.soundcloud.com") {
-        return { original: u.toString() };
-      }
-      return null;
-    }
-
-    /**
-     * Twitch:
-     * - Clips: https://clips.twitch.tv/<slug>
-     * - Videos: https://www.twitch.tv/videos/<id>
-     * - Channels: https://www.twitch.tv/<channel>
-     * Embed requires a "parent" domain param. Caller must supply.
-     */
-    function parseTwitch(u) {
-      const host = normHost(u.hostname);
-      const parts = u.pathname.split("/").filter(Boolean);
-
-      if (host === "clips.twitch.tv") {
-        const slug = parts[0] || "";
-        return slug ? { kind: "clip", slug } : null;
-      }
-
-      if (host === "twitch.tv" || host === "www.twitch.tv" || host === "m.twitch.tv") {
-        if (parts[0] === "videos" && parts[1]) {
-          return { kind: "video", id: parts[1] };
-        }
-        // channel
-        if (parts[0]) return { kind: "channel", channel: parts[0] };
-      }
-
-      return null;
-    }
-
-    /**
-     * Loom:
-     * https://www.loom.com/share/<id> -> https://www.loom.com/embed/<id>
-     */
-    function parseLoom(u) {
-      const host = normHost(u.hostname);
-      const parts = u.pathname.split("/").filter(Boolean);
-      if (host !== "loom.com") return null;
-
-      if (parts[0] === "share" && parts[1]) return { id: parts[1] };
-      if (parts[0] === "embed" && parts[1]) return { id: parts[1] };
-      return null;
-    }
-
-    /**
-     * Google Drive file:
-     * https://drive.google.com/file/d/<id>/view -> https://drive.google.com/file/d/<id>/preview
-     * Also accepts /open?id=<id>
-     */
-    function parseGDrive(u) {
-      const host = normHost(u.hostname);
-      if (host !== "drive.google.com") return null;
-
-      const parts = u.pathname.split("/").filter(Boolean);
-      // /file/d/<id>/...
-      if (parts[0] === "file" && parts[1] === "d" && parts[2]) {
-        return { id: parts[2] };
-      }
-      // /open?id=<id>
-      const id = u.searchParams.get("id");
-      if (id) return { id };
-      return null;
-    }
-
-    /**
-     * Google Docs/Slides embed-ish:
-     * - Docs: /document/d/<id>/edit -> /document/d/<id>/preview
-     * - Slides: /presentation/d/<id>/edit -> /presentation/d/<id>/embed
-     * - Sheets: /spreadsheets/d/<id>/edit -> /spreadsheets/d/<id>/preview
-     */
-    function parseGoogleDocs(u) {
-      const host = normHost(u.hostname);
-      if (host !== "docs.google.com") return null;
-
-      const parts = u.pathname.split("/").filter(Boolean);
-      // e.g. document/d/<id>/edit
-      const kind = parts[0];
-      if (!["document", "presentation", "spreadsheets", "forms"].includes(kind)) return null;
-      if (parts[1] !== "d" || !parts[2]) return null;
-
-      return { kind, id: parts[2] };
-    }
-
-    /**
-     * Main converter.
-     * Options:
-     * - twitchParent: required by Twitch embed URLs. Example: "example.com"
-     */
-    export function toEmbedUrl(entryText, options = {}) {
-      const input = String(entryText || "").trim();
-      if (!input) return { ok: false, reason: "empty" };
-
-      const u = safeURL(input);
-      if (!u) return { ok: false, reason: "not_a_url" };
-
-      const host = normHost(u.hostname);
-
-      // YouTube
-      const yt = parseYouTube(u);
-      if (yt) {
-        // Preserve start time if present: t=123 or start=123
-        const t = pickFirstNonEmpty(u.searchParams.get("start"), u.searchParams.get("t"));
-        const start = t ? String(parseInt(t, 10) || "") : "";
-        const embed = new URL(`https://www.youtube.com/embed/${yt.id}`);
-        if (start) embed.searchParams.set("start", start);
-        return { ok: true, provider: "youtube", embedUrl: embed.toString() };
-      }
-
-      // Vimeo
-      const vm = parseVimeo(u);
-      if (vm) {
-        return { ok: true, provider: "vimeo", embedUrl: `https://player.vimeo.com/video/${vm.id}` };
-      }
-
-      // Spotify
-      const sp = parseSpotify(input, u);
-      if (sp) {
-        return { ok: true, provider: "spotify", embedUrl: `https://open.spotify.com/embed/${sp.type}/${sp.id}` };
-      }
-
-      // SoundCloud
-      const sc = parseSoundCloud(u);
-      if (sc) {
-        const embed = new URL("https://w.soundcloud.com/player/");
-        embed.searchParams.set("url", sc.original);
-        return { ok: true, provider: "soundcloud", embedUrl: embed.toString() };
-      }
-
-      // Twitch (needs parent)
-      const tw = parseTwitch(u);
-      if (tw) {
-        const parent = String(options.twitchParent || "").trim();
-        if (!parent) {
-          return { ok: false, reason: "twitch_requires_parent", provider: "twitch" };
-        }
-        const embed = new URL("https://player.twitch.tv/");
-        embed.searchParams.set("parent", parent);
-
-        if (tw.kind === "clip") embed.searchParams.set("clip", tw.slug);
-        if (tw.kind === "video") embed.searchParams.set("video", tw.id);
-        if (tw.kind === "channel") embed.searchParams.set("channel", tw.channel);
-
-        return { ok: true, provider: "twitch", embedUrl: embed.toString() };
-      }
-
-      // Loom
-      const lo = parseLoom(u);
-      if (lo) {
-        return { ok: true, provider: "loom", embedUrl: `https://www.loom.com/embed/${lo.id}` };
-      }
-
-      // Google Drive file preview
-      const gd = parseGDrive(u);
-      if (gd) {
-        return { ok: true, provider: "gdrive", embedUrl: `https://drive.google.com/file/d/${gd.id}/preview` };
-      }
-
-      // Google Docs/Slides/Sheets "preview/embed"
-      const gdocs = parseGoogleDocs(u);
-      if (gdocs) {
-        if (gdocs.kind === "presentation") {
-          return { ok: true, provider: "gslides", embedUrl: `https://docs.google.com/presentation/d/${gdocs.id}/embed` };
-        }
-        if (gdocs.kind === "document") {
-          return { ok: true, provider: "gdocs", embedUrl: `https://docs.google.com/document/d/${gdocs.id}/preview` };
-        }
-        if (gdocs.kind === "spreadsheets") {
-          return { ok: true, provider: "gsheets", embedUrl: `https://docs.google.com/spreadsheets/d/${gdocs.id}/preview` };
-        }
-        // Forms embedding is a different endpoint; keep as-is if already /viewform, else try /viewform
-        if (gdocs.kind === "forms") {
-          // Many forms already have /viewform; embed param is embedded=true
-          const embed = new URL(`https://docs.google.com/forms/d/${gdocs.id}/viewform`);
-          embed.searchParams.set("embedded", "true");
-          return { ok: true, provider: "gforms", embedUrl: embed.toString() };
-        }
-      }
-
-      return { ok: false, reason: "unsupported_host", host };
-    }
-
-    /**
-     * Convenience: returns embedUrl string or null
-     */
-    export function embedUrlOrNull(entryText, options = {}) {
-      const r = toEmbedUrl(entryText, options);
-      return r.ok ? r.embedUrl : null;
-    }
-
-    // HedgeyOS core
+  <script>
     (() => {
       const $ = (sel, el=document) => el.querySelector(sel);
       const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -1065,7 +737,7 @@
       let winSeq = 0;
 
       const state = {
-        windows: new Map(),
+        windows: new Map(), // id -> {id,type,title,el,icon,appKey,url}
         activeId: null,
         browserCurrentUrl: "https://decentricity.github.io",
         pendingSaveFromBrowserId: null,
@@ -1196,11 +868,13 @@
         });
 
         desktop.addEventListener("pointerdown", (e) => {
+          // click on desktop background clears menus, but keeps windows
           if(e.target === windowsEl || e.target === iconsEl || e.target === desktop){
             closeAllMenus();
           }
         });
 
+        // menu actions
         desktop.addEventListener("click", (e) => {
           const item = e.target.closest && e.target.closest(".item");
           if(!item) return;
@@ -1248,6 +922,7 @@
           }
         });
 
+        // dark toggle
         darkToggle.addEventListener("click", () => {
           const cur = document.documentElement.getAttribute("data-theme") || "light";
           setTheme(cur === "dark" ? "light" : "dark");
@@ -1332,9 +1007,13 @@
         win.appendChild(inner);
         win.appendChild(handle);
 
+        // focus on any click inside window (body OR titlebar)
         win.addEventListener("pointerdown", () => focusWindow(id));
 
+        // drag
         enableDrag(win, tb);
+
+        // resize
         enableResize(win, handle);
 
         windowsEl.appendChild(win);
@@ -1347,8 +1026,10 @@
         if(!w) return;
         state.activeId = id;
 
+        // bring to top
         w.el.style.zIndex = (++zTop).toString();
 
+        // inactive styling
         state.windows.forEach((v) => v.el.classList.add("inactive"));
         w.el.classList.remove("inactive");
       }
@@ -1384,6 +1065,7 @@
           const w = rect.width;
           const h = rect.height;
 
+          // allow partially offscreen, but keep at least a sliver of titlebar accessible
           const minVisible = 32;
           const minX = -(w - minVisible);
           const maxX = vw - minVisible;
@@ -1453,13 +1135,15 @@
       }
 
       function layoutIcons(){
+        // Icons exist "behind windows" (desktop), only for OPEN windows.
         iconsEl.innerHTML = "";
 
         const open = Array.from(state.windows.values());
 
+        // bottom-left packing: left-right then up
         const inset = 12;
         const startX = inset;
-        const startY = (window.innerHeight - inset) - 86;
+        const startY = (window.innerHeight - inset) - 86; // near bottom
         const stepX = 90;
         const stepY = 92;
 
@@ -1549,6 +1233,7 @@
 
         const area = $("#notesArea", body);
 
+        // load from localStorage (single notes doc for now)
         const saved = localStorage.getItem(LS_NOTES);
         if(saved != null){
           area.value = saved;
@@ -1570,11 +1255,6 @@
         layoutIcons();
 
         return id;
-      }
-
-      function normalizeUserUrl(raw){
-        const u = safeURL(raw);
-        return u ? u.toString() : String(raw || "").trim();
       }
 
       function openBrowserWindow(){
@@ -1607,29 +1287,17 @@
           frame.src = url;
         }
 
-        function go(){
-          const raw = (urlField.value || "").trim();
-          if(!raw) return;
-
-          const normalized = normalizeUserUrl(raw);
-
-          const r = toEmbedUrl(normalized, { twitchParent: location.hostname });
-
-          const finalUrl = r.ok ? r.embedUrl : normalized;
-
-          urlField.value = finalUrl;
-          nav(finalUrl);
-        }
-
-        goBtn.addEventListener("click", go);
-        urlField.addEventListener("keydown", (e) => {
-          if(e.key === "Enter") go();
+        goBtn.addEventListener("click", () => {
+          const u = (urlField.value || "").trim();
+          if(!u) return;
+          nav(u);
         });
 
         urlField.value = initial;
         frame.src = initial;
 
         saveBtn.addEventListener("click", () => {
+          // capture current browser url
           const current = (urlField.value || "").trim() || state.browserCurrentUrl;
           if(!current) return;
 
@@ -1675,6 +1343,7 @@
           .replaceAll("'","&#039;");
       }
 
+      // modal buttons
       dlgNo.addEventListener("click", hideModal);
       modal.addEventListener("pointerdown", (e) => {
         if(e.target === modal) hideModal();
@@ -1693,6 +1362,7 @@
         buildAppsMenu();
       });
 
+      // window resize should reflow icons
       window.addEventListener("resize", () => {
         layoutIcons();
       });
@@ -1701,6 +1371,7 @@
         const did = localStorage.getItem(LS_FIRST_BOOT);
         if(did) return;
 
+        // Create Files first, then Notes on top
         openFilesWindow();
         openNotesWindow({ title:"Notes", prefill: DEFAULT_NOTES_TEXT });
 
@@ -1708,15 +1379,19 @@
       }
 
       function normalBoot(){
+        // Always have at least Files on startup
         openFilesWindow();
       }
 
+      // init
       loadTheme();
       setupMenus();
       buildAppsMenu();
 
+      // ensure something opens
       if(localStorage.getItem(LS_FIRST_BOOT)){
         normalBoot();
+        // also open notes if notes exist, but keep it lightweight
         const savedNotes = localStorage.getItem(LS_NOTES);
         if(savedNotes && savedNotes.trim()){
           openNotesWindow({ title:"Notes" });
@@ -1725,8 +1400,10 @@
         firstBoot();
       }
 
+      // make sure icons exist after boot
       setTimeout(layoutIcons, 0);
 
+      // make desktop background click not select text
       desktop.addEventListener("dragstart", (e) => e.preventDefault());
     })();
   </script>
