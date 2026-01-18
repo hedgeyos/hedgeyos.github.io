@@ -2,1409 +2,1880 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HedgeyOS</title>
+
   <style>
     :root{
-      --bg: #cfcfcf;
-      --menubar-bg:#e6e6e6;
-      --menubar-border-dark:#7a7a7a;
-      --menubar-border-light:#ffffff;
+      --font-size: clamp(12px, 2.8vw, 14px);
+      --line: clamp(16px, 3.4vw, 18px);
+      --pad: clamp(8px, 2.2vw, 18px);
+      --menubar-h: 26px;
 
-      --menu-bg:#f2f2f2;
-      --menu-border:#5b5b5b;
-      --menu-text:#111;
-      --menu-hover:#2b67c7;
-      --menu-hover-text:#fff;
-      --menu-sep:#a8a8a8;
+      /* light theme */
+      --os-bg: #c9c9c9;
+      --os-face: #d7d7d7;
+      --os-face2: #ededed;
+      --os-shadow: #7b7b7b;
+      --os-dark: #3b3b3b;
+      --os-white: #ffffff;
+      --os-black: #000000;
+      --os-blue: #2a66b7;
 
-      --win-bg:#efefef;
-      --win-border:#404040;
-      --win-highlight:#ffffff;
-      --win-shadow:#8a8a8a;
+      --menubar-top: #e8e8e8;
+      --menubar-bot: #d6d6d6;
 
-      --titlebar-bg:#dcdcdc;
-      --titlebar-text:#111;
+      --titlebar-top: #e6e6e6;
+      --titlebar-bot: #cfcfcf;
 
-      --btn-bg:#dedede;
-      --btn-border:#444;
-      --btn-shadow:#fff;
+      --chrome-top: #e8e8e8;
+      --chrome-bot: #d6d6d6;
 
-      --field-bg:#ffffff;
-      --field-border:#555;
-      --field-text:#111;
+      --inactive-top: #dddddd;
+      --inactive-bot: #c7c7c7;
 
-      --status-text:#111;
+      --border-thin: 1px;
+      --border-thick: 2px;
 
-      --accent:#2b67c7;
-      --desktop-icon-text:#111;
-
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      --sys: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-
-      --menubar-h: 28px;
-      --win-radius: 0px;
-      --win-title-h: 26px;
+      --icon-cell-w: 92px;
+      --icon-cell-h: 86px;
+      --icon-pad: 10px;
+      --icon-size: 34px;
     }
 
-    [data-theme="dark"]{
-      --bg:#23262b;
-      --menubar-bg:#2b2f35;
-      --menubar-border-dark:#111;
-      --menubar-border-light:#3b4048;
+    body.dark{
+      --os-bg: #1f232a;
+      --os-face: #2c313a;
+      --os-face2: #252a33;
+      --os-shadow: #0f1217;
+      --os-dark: #cfd6e6;
+      --os-white: #515b6b;
+      --os-black: #eef2ff;
+      --os-blue: #4c84d6;
 
-      --menu-bg:#2f343c;
-      --menu-border:#101215;
-      --menu-text:#f2f2f2;
-      --menu-hover:#2b67c7;
-      --menu-hover-text:#fff;
-      --menu-sep:#4b505a;
+      --menubar-top: #3a404b;
+      --menubar-bot: #2a2f38;
 
-      --win-bg:#2a2e34;
-      --win-border:#101215;
-      --win-highlight:#3b4048;
-      --win-shadow:#0a0b0d;
+      --titlebar-top: #3a404b;
+      --titlebar-bot: #2f343f;
 
-      --titlebar-bg:#30363f;
-      --titlebar-text:#f2f2f2;
+      --chrome-top: #3a404b;
+      --chrome-bot: #2a2f38;
 
-      --btn-bg:#323944;
-      --btn-border:#0b0d10;
-      --btn-shadow:#46505f;
-
-      --field-bg:#1f2329;
-      --field-border:#0b0d10;
-      --field-text:#f2f2f2;
-
-      --status-text:#d8d8d8;
-      --desktop-icon-text:#f2f2f2;
+      --inactive-top: #323846;
+      --inactive-bot: #2a2f38;
     }
 
-    html,body{
-      height:100%;
-      margin:0;
-      background:var(--bg);
-      color:var(--menu-text);
-      font-family: var(--sys);
-      overflow:hidden;
+    @font-face{
+      font-family: "ChicagoKare";
+      src: url("fonts/ChicagoKare-Regular.woff2") format("woff2");
+      font-display: swap;
+    }
+
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      background: var(--os-bg);
+      color: var(--os-black);
+      font-family: "ChicagoKare","ChiKareGo2Web","Chicago","Charcoal","Geneva","Tahoma",system-ui,sans-serif;
+      font-size: var(--font-size);
+      line-height: var(--line);
       -webkit-font-smoothing: none;
-      -moz-osx-font-smoothing: grayscale;
-      text-rendering: geometricPrecision;
+      font-smooth: never;
+      overflow: hidden;
+      overscroll-behavior: none;
     }
 
-    /* Desktop */
-    #desktop{
-      position:fixed;
-      inset:0;
-      background:var(--bg);
-      overflow:hidden;
+    .bevel-out{
+      background: var(--os-face);
+      border-top: var(--border-thin) solid var(--os-white);
+      border-left: var(--border-thin) solid var(--os-white);
+      border-right: var(--border-thin) solid var(--os-shadow);
+      border-bottom: var(--border-thin) solid var(--os-shadow);
+    }
+    .bevel-out.thick{
+      border-top: var(--border-thick) solid var(--os-white);
+      border-left: var(--border-thick) solid var(--os-white);
+      border-right: var(--border-thick) solid var(--os-shadow);
+      border-bottom: var(--border-thick) solid var(--os-shadow);
+    }
+    .bevel-in{
+      background: var(--os-face2);
+      border-top: var(--border-thin) solid var(--os-shadow);
+      border-left: var(--border-thin) solid var(--os-shadow);
+      border-right: var(--border-thin) solid var(--os-white);
+      border-bottom: var(--border-thin) solid var(--os-white);
+    }
+    .hairline{
+      outline: 1px solid var(--os-dark);
+      outline-offset: -1px;
     }
 
-    #desktop-icons{
-      position:absolute;
-      inset: var(--menubar-h) 0 0 0;
-      pointer-events:none; /* icons themselves re-enable */
-    }
-
-    .desktop-icon{
-      position:absolute;
-      width:86px;
-      pointer-events:auto;
-      user-select:none;
-      -webkit-user-select:none;
-      text-align:center;
-      cursor:default;
-    }
-    .desktop-icon .emoji{
-      font-size:34px;
-      line-height:36px;
-      filter: drop-shadow(0 1px 0 rgba(255,255,255,0.35));
-    }
-    [data-theme="dark"] .desktop-icon .emoji{
-      filter: drop-shadow(0 1px 0 rgba(0,0,0,0.5));
-    }
-    .desktop-icon .label{
-      margin-top:2px;
-      font-size:12px;
-      line-height:13px;
-      color:var(--desktop-icon-text);
-      text-shadow: 0 1px 0 rgba(255,255,255,0.35);
-      display:-webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow:hidden;
-      word-break: break-word;
-      padding:0 4px;
-    }
-    [data-theme="dark"] .desktop-icon .label{
-      text-shadow: 0 1px 0 rgba(0,0,0,0.6);
-    }
-
-    /* Menubar */
-    #menubar{
-      position:absolute;
-      left:0; right:0; top:0;
-      height:var(--menubar-h);
-      background:var(--menubar-bg);
-      display:flex;
-      align-items:stretch;
-      padding:0 6px;
-      box-sizing:border-box;
-      border-top:1px solid var(--menubar-border-light);
-      border-bottom:1px solid var(--menubar-border-dark);
-      user-select:none;
-      -webkit-user-select:none;
-      z-index:10000;
-    }
-
-    .menu-left{
-      display:flex;
-      gap:2px;
-      align-items:stretch;
-      flex: 1 1 auto;
-      min-width:0;
-    }
-    .menu-right{
-      display:flex;
-      align-items:center;
-      gap:6px;
+    /* ===== Menu bar ===== */
+    .menubar{
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: var(--menubar-h);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 8px;
+      box-sizing: border-box;
+      background: linear-gradient(var(--menubar-top), var(--menubar-bot));
+      z-index: 9999;
+      user-select: none;
     }
 
     .menu{
-      position:relative;
-      display:flex;
-      align-items:center;
-      padding:0 10px;
-      font-size:14px;
-      color:var(--menu-text);
-      cursor:default;
-      white-space:nowrap;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      height: calc(var(--menubar-h) - 2px);
+      padding: 0 6px;
+      cursor: default;
+      white-space: nowrap;
+      color: var(--os-black);
     }
-    .menu.active{
-      background: var(--accent);
-      color:#fff;
+    .menu.open{
+      background: var(--os-blue);
+      color: #fff;
     }
-    .menu .logo{
-      font-size:16px;
-      line-height:16px;
-      transform: translateY(-1px);
+    .menu-label{ font-weight: 600; }
+
+    .menu-dropdown{
+      position: absolute;
+      top: calc(var(--menubar-h) - 2px);
+      left: 0;
+      min-width: 240px;
+      max-height: min(60vh, 520px);
+      overflow: auto;
+      display: none;
+      padding: 2px;
+      box-sizing: border-box;
+      background: var(--os-face);
+      z-index: 10000;
+      color: var(--os-black);
+    }
+    .menu.open .menu-dropdown{ display: block; }
+
+    .menu-item{
+      padding: 4px 10px;
+      cursor: default;
+      white-space: nowrap;
+      color: var(--os-black);
+    }
+    .menu-item:hover{
+      background: var(--os-blue);
+      color: #fff;
+    }
+    .menu-sep{
+      height: 1px;
+      background: var(--os-shadow);
+      margin: 3px 6px;
+    }
+    .menu-title{
+      font-weight: 600;
+      opacity: 0.85;
+      pointer-events: none;
     }
 
-    .dropdown{
-      position:absolute;
-      top: calc(var(--menubar-h) - 1px);
-      left:0;
-      min-width: 220px;
-      background: var(--menu-bg);
-      border:1px solid var(--menu-border);
-      box-shadow: 1px 1px 0 rgba(0,0,0,0.25);
-      padding:6px 0;
-      display:none;
-      z-index:10001;
-      color: var(--menu-text); /* IMPORTANT: light mode readable */
-    }
-    .menu.active .dropdown{ display:block; }
+    .menubar-spacer{ flex: 1; }
 
-    .item, .heading{
-      padding:6px 14px;
-      font-size:14px;
-      line-height:16px;
-      color: var(--menu-text);
-      white-space:nowrap;
+    .modebtn{
+      width: 22px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      font: inherit;
+      font-weight: 700;
+      background: var(--os-face);
+      border-top: 1px solid var(--os-white);
+      border-left: 1px solid var(--os-white);
+      border-right: 1px solid var(--os-shadow);
+      border-bottom: 1px solid var(--os-shadow);
+      box-shadow: inset 0 0 0 1px var(--os-dark);
+      cursor: default;
+      user-select: none;
+      color: var(--os-black);
     }
-    .heading{
-      opacity:0.75;
-      font-size:12px;
-      padding-top:8px;
-      padding-bottom:4px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-    .item{
-      cursor:default;
-    }
-    .item:hover{
-      background: var(--menu-hover);
-      color: var(--menu-hover-text);
-    }
-    .item.disabled{
-      opacity:0.5;
-      pointer-events:none;
-    }
-    .sep{
-      height:1px;
-      background: var(--menu-sep);
-      margin:6px 0;
+    .modebtn:active{
+      border-top: 1px solid var(--os-shadow);
+      border-left: 1px solid var(--os-shadow);
+      border-right: 1px solid var(--os-white);
+      border-bottom: 1px solid var(--os-white);
     }
 
-    .toggle-btn{
-      width:26px;
-      height:22px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: var(--btn-bg);
-      border:1px solid var(--btn-border);
-      box-shadow: inset 1px 1px 0 var(--btn-shadow);
-      font-size:14px;
-      cursor:default;
-      user-select:none;
-      -webkit-user-select:none;
+    /* ===== Desktop area ===== */
+    .desktop{
+      position: absolute;
+      top: var(--menubar-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: var(--pad);
+      box-sizing: border-box;
+      overflow: hidden;
+      touch-action: none;
     }
 
-    /* Windows */
-    #windows{
-      position:absolute;
-      inset: var(--menubar-h) 0 0 0;
-      z-index:5;
+    /* icon layer is behind windows */
+    .icon-layer{
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
     }
 
+    .desk-icon{
+      position: absolute;
+      width: var(--icon-cell-w);
+      height: var(--icon-cell-h);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      align-items: start;
+      justify-items: center;
+      gap: 6px;
+      pointer-events: auto;
+      user-select: none;
+      cursor: default;
+    }
+
+    .desk-icon .glyph{
+      width: calc(var(--icon-size) + 10px);
+      height: calc(var(--icon-size) + 10px);
+      display: grid;
+      place-items: center;
+      font-size: var(--icon-size);
+      line-height: 1;
+      background: transparent;
+      border-radius: 6px;
+    }
+
+    .desk-icon:active .glyph{ filter: brightness(0.9); }
+
+    .desk-icon .label{
+      width: 100%;
+      text-align: center;
+      font-size: calc(var(--font-size) - 1px);
+      line-height: 1.1;
+      color: var(--os-black);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+      padding: 0 4px;
+      box-sizing: border-box;
+      display: grid;
+      gap: 2px;
+    }
+
+    body.dark .desk-icon .label{ text-shadow: none; }
+
+    .desk-icon .line{
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ===== Windows ===== */
     .window{
-      position:absolute;
-      background: var(--win-bg);
-      border:1px solid var(--win-border);
-      box-shadow:
-        inset 1px 1px 0 var(--win-highlight),
-        inset -1px -1px 0 var(--win-shadow);
-      border-radius: var(--win-radius);
-      overflow:hidden;
-      touch-action:none; /* important for pointer dragging on mobile */
+      position: absolute;
+      min-width: 320px;
+      min-height: 240px;
+      user-select: none;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-rows: 24px 1fr;
+      z-index: 20;
     }
-    .window.inactive{
-      filter: saturate(0.8);
+
+    .window.inactive .titlebar{
+      background: linear-gradient(var(--inactive-top), var(--inactive-bot));
+      filter: saturate(0.85);
+    }
+    .window.inactive .titlebar .title:before,
+    .window.inactive .titlebar .title:after{
+      opacity: 0.55;
     }
 
     .titlebar{
-      height: var(--win-title-h);
-      background: var(--titlebar-bg);
-      border-bottom:1px solid var(--win-border);
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:0 8px;
-      box-sizing:border-box;
+      height: 24px;
+      display: grid;
+      grid-template-columns: 64px 1fr 64px;
+      align-items: center;
+      padding: 0 6px;
+      box-sizing: border-box;
+      background: linear-gradient(var(--titlebar-top), var(--titlebar-bot));
       cursor: grab;
-      user-select:none;
-      -webkit-user-select:none;
-      touch-action:none;
+      touch-action: none;
     }
     .titlebar:active{ cursor: grabbing; }
-    .titlebar .controls{
-      display:flex;
-      gap:6px;
-      align-items:center;
-      min-width:42px;
-    }
-    .ctrl{
-      width:14px;
-      height:14px;
-      border:1px solid var(--win-border);
-      background: var(--btn-bg);
-      box-shadow: inset 1px 1px 0 var(--btn-shadow);
+
+    .controls{
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-start;
     }
 
-    .titlebar .center-title{
-      flex:1 1 auto;
-      min-width:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-      color: var(--titlebar-text);
-      font-weight:600;
-      font-size:14px;
-      letter-spacing:0.2px;
+    .os9-box{
+      width: 12px;
+      height: 12px;
+      background: var(--os-face);
+      border-top: 1px solid var(--os-white);
+      border-left: 1px solid var(--os-white);
+      border-right: 1px solid var(--os-shadow);
+      border-bottom: 1px solid var(--os-shadow);
+      box-shadow: inset 0 0 0 1px var(--os-dark);
+      cursor: default;
     }
-    .titlebar .center-title .lines{
+    .os9-box:active{
+      border-top: 1px solid var(--os-shadow);
+      border-left: 1px solid var(--os-shadow);
+      border-right: 1px solid var(--os-white);
+      border-bottom: 1px solid var(--os-white);
+    }
+
+    .title{
+      position: relative;
+      text-align: center;
+      font-weight: 600;
+      padding: 0 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--os-black);
+    }
+    .title:before,
+    .title:after{
+      content:"";
       position:absolute;
-      left:8px; right:8px;
-      height:14px;
+      top: 50%;
+      width: 44%;
+      height: 10px;
+      transform: translateY(-50%);
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.9) 0px,
+          rgba(255,255,255,0.9) 1px,
+          rgba(123,123,123,0.9) 1px,
+          rgba(123,123,123,0.9) 2px
+        );
+      opacity: 0.9;
+    }
+    body.dark .title:before,
+    body.dark .title:after{
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          rgba(220,230,255,0.25) 0px,
+          rgba(220,230,255,0.25) 1px,
+          rgba(0,0,0,0.35) 1px,
+          rgba(0,0,0,0.35) 2px
+        );
+    }
+    .title:before{ left: 0; margin-left: 6px; }
+    .title:after{ right: 0; margin-right: 6px; }
+    .title > span{
+      position: relative;
+      padding: 0 10px;
+      background: linear-gradient(var(--titlebar-top), var(--titlebar-bot));
+      color: var(--os-black);
+    }
+
+    .right{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:6px;
+    }
+
+    .resize-grip{
+      position: absolute;
+      right: 3px;
+      bottom: 3px;
+      width: 14px;
+      height: 14px;
+      background:
+        repeating-linear-gradient(135deg,
+          rgba(255,255,255,0.9) 0px,
+          rgba(255,255,255,0.9) 1px,
+          rgba(123,123,123,0.9) 1px,
+          rgba(123,123,123,0.9) 2px);
+      opacity: 0.9;
+      cursor: nwse-resize;
+      touch-action: none;
+    }
+    body.dark .resize-grip{
+      background:
+        repeating-linear-gradient(135deg,
+          rgba(220,230,255,0.25) 0px,
+          rgba(220,230,255,0.25) 1px,
+          rgba(0,0,0,0.35) 1px,
+          rgba(0,0,0,0.35) 2px);
+    }
+
+    /* ===== Finder-ish UI ===== */
+    .window-body{
+      height: 100%;
+      background: var(--os-face);
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-width: 0;
+    }
+
+    .sidebar{
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      border-right: 1px solid var(--os-shadow);
+      background: var(--os-face);
+      min-width: 0;
+    }
+    .section-title{
+      padding: 8px 10px;
+      font-weight: 600;
+    }
+    .navlist{
+      margin: 0;
+      padding: 0 6px 10px 6px;
+      list-style: none;
+      overflow: auto;
+      min-width: 0;
+    }
+    .navitem{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 6px;
+      cursor: default;
+      white-space: nowrap;
+    }
+    .navitem.active{
+      background: var(--os-blue);
+      color: #fff;
+    }
+    .icon{
+      width: 14px;
+      height: 14px;
+      background: #9b9bff;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+      flex: 0 0 auto;
+    }
+
+    .main{
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      background: var(--os-face);
+      min-width: 0;
+    }
+
+    .toolbar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      pointer-events:none;
-    }
-    .lineblock{
-      width:38%;
-      height:10px;
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          rgba(255,255,255,0.65) 0px,
-          rgba(255,255,255,0.65) 1px,
-          rgba(0,0,0,0.10) 2px,
-          rgba(0,0,0,0.10) 3px
-        );
-      opacity:0.65;
-      filter: contrast(0.9);
-    }
-    [data-theme="dark"] .lineblock{
-      background:
-        repeating-linear-gradient(
-          to bottom,
-          rgba(255,255,255,0.25) 0px,
-          rgba(255,255,255,0.25) 1px,
-          rgba(0,0,0,0.55) 2px,
-          rgba(0,0,0,0.55) 3px
-        );
-      opacity:0.85;
-    }
-    .title-text{
-      background: var(--titlebar-bg);
-      padding:0 8px;
-      z-index:2;
-      max-width:70%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      gap: 8px;
+      padding: 6px;
+      border-bottom: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
+      flex-wrap: wrap;
     }
 
-    .window-inner{
-      /* CRITICAL FIX: make content layout stable */
-      display:flex;
-      flex-direction:column;
-      height: calc(100% - var(--win-title-h));
-      min-height:0; /* allow flex children to shrink properly */
+    .btn{
+      padding: 3px 10px;
+      font: inherit;
+      background: var(--os-face);
+      border-top: 1px solid var(--os-white);
+      border-left: 1px solid var(--os-white);
+      border-right: 1px solid var(--os-shadow);
+      border-bottom: 1px solid var(--os-shadow);
+      box-shadow: inset 0 0 0 1px var(--os-dark);
+      cursor: default;
+      color: var(--os-black);
+    }
+    .btn:active{
+      border-top: 1px solid var(--os-shadow);
+      border-left: 1px solid var(--os-shadow);
+      border-right: 1px solid var(--os-white);
+      border-bottom: 1px solid var(--os-white);
     }
 
-    .window-body{
-      flex:1 1 auto;
-      min-height:0; /* IMPORTANT for scroll areas */
-      position:relative;
-      padding:10px;
-      box-sizing:border-box;
-      overflow:hidden; /* internal scrollers handle overflow */
+    .listwrap{
+      height: 100%;
+      overflow: auto;
+      background: var(--os-face2);
+      min-width: 0;
+    }
+
+    table.list{
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    table.list thead th{
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
+      border-bottom: 1px solid var(--os-shadow);
+      padding: 4px 6px;
+      text-align: left;
+      font-weight: 600;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+    }
+    table.list tbody td{
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(200,200,200,0.35);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    tr.row.selected{
+      background: var(--os-blue);
+      color: #fff;
     }
 
     .statusbar{
-      flex: 0 0 auto;
-      height:22px;
-      border-top:1px solid var(--win-border);
+      padding: 4px 8px;
+      border-top: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
+      display:flex;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+      color: var(--os-black);
+    }
+    .statusbar span{
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ===== App iframe window body ===== */
+    .appwrap{
+      height: 100%;
+      background: var(--os-face2);
+      overflow: hidden;
+      min-height: 0;
+    }
+    iframe.appframe{
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: #fff;
+    }
+
+    /* ===== Browser UI ===== */
+    .browserwrap{
+      height: 100%;
+      background: var(--os-face2);
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 0;
+    }
+    .browserbar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      padding:0 10px;
-      font-size:13px;
-      color: var(--status-text);
-      box-sizing:border-box;
-      background: rgba(255,255,255,0.18);
+      gap: 6px;
+      padding: 6px;
+      border-bottom: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
+      flex-wrap: wrap;
     }
-    [data-theme="dark"] .statusbar{
-      background: rgba(0,0,0,0.15);
-    }
-
-    .resize-handle{
-      position:absolute;
-      right:2px;
-      bottom:2px;
-      width:18px;
-      height:18px;
-      cursor:nwse-resize;
-      background:
-        repeating-linear-gradient(
-          135deg,
-          rgba(0,0,0,0.25) 0px,
-          rgba(0,0,0,0.25) 1px,
-          rgba(255,255,255,0.25) 2px,
-          rgba(255,255,255,0.25) 3px
-        );
-      opacity:0.75;
-      border-left:1px solid rgba(0,0,0,0.12);
-      border-top:1px solid rgba(0,0,0,0.12);
-      touch-action:none;
-      z-index: 50;
-    }
-    [data-theme="dark"] .resize-handle{
-      opacity:0.9;
-    }
-
-    /* Generic UI bits */
-    .btn{
-      background: var(--btn-bg);
-      border:1px solid var(--btn-border);
-      box-shadow: inset 1px 1px 0 var(--btn-shadow);
-      padding:4px 10px;
-      font-size:14px;
-      cursor:default;
-      user-select:none;
-      -webkit-user-select:none;
-    }
-
     .field{
-      background: var(--field-bg);
-      border:1px solid var(--field-border);
-      color: var(--field-text);
-      padding:6px 8px;
-      font-size:14px;
-      outline:none;
-      box-sizing:border-box;
-      font-family: var(--sys);
+      flex: 1 1 180px;
+      min-width: 160px;
+      padding: 3px 6px;
+      font: inherit;
+      background: var(--os-face2);
+      color: var(--os-black);
+      border-top: 1px solid var(--os-shadow);
+      border-left: 1px solid var(--os-shadow);
+      border-right: 1px solid var(--os-white);
+      border-bottom: 1px solid var(--os-white);
+      box-shadow: inset 0 0 0 1px var(--os-dark);
+      outline: none;
+    }
+    .field:focus{
+      box-shadow: inset 0 0 0 1px var(--os-dark), 0 0 0 1px rgba(42,102,183,0.35);
     }
 
-    /* Files window content */
-    .files-wrap{
-      display:flex;
-      flex-direction:column;
-      height:100%;
-      min-height:0;
-      gap:8px;
+    /* ===== Notes ===== */
+    .noteswrap{
+      height: 100%;
+      background: var(--os-face2);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 0;
     }
-    .files-toolbar{
+    .notesbar{
       display:flex;
-      gap:8px;
       align-items:center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px;
+      border-bottom: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
+      flex-wrap: wrap;
     }
-    .files-grid{
-      border:1px solid var(--win-border);
-      background: rgba(255,255,255,0.12);
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-      flex:1 1 auto;
+    .notehint{
+      opacity: 0.85;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .files-header{
-      display:flex;
-      border-bottom:1px solid rgba(0,0,0,0.25);
-      background: rgba(255,255,255,0.14);
-      font-weight:700;
-      font-size:14px;
-    }
-    .files-header div{
-      padding:6px 8px;
-    }
-    .col-name{ flex: 1 1 auto; }
-    .files-list{
-      /* FIX: scroll inside, not spilling out */
-      flex: 1 1 auto;
-      min-height:0;
-      overflow:auto;
-      background: rgba(255,255,255,0.06);
-    }
-    .row{
-      padding:8px 10px;
-      border-bottom:1px solid rgba(0,0,0,0.08);
-      font-size:14px;
-      cursor:default;
-      user-select:none;
-      -webkit-user-select:none;
-    }
-    .row.selected{
-      background: var(--accent);
-      color:#fff;
+    .notestext{
+      width: 100%;
+      height: 100%;
+      resize: none;
+      box-sizing: border-box;
+      padding: 10px;
+      font: inherit;
+      line-height: var(--line);
+      color: var(--os-black);
+      background: var(--os-face2);
+      border: 0;
+      outline: none;
     }
 
-    /* Notes app */
-    .notes-area{
-      width:100%;
-      height:100%;
-      resize:none;
-      font-family: var(--mono);
-      font-size:14px;
-      line-height:18px;
-      padding:10px;
-      box-sizing:border-box;
-      background: var(--field-bg);
-      color: var(--field-text);
-      border:1px solid var(--field-border);
-      outline:none;
+    /* ===== Dialog ===== */
+    .modal{
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20000;
+      background: rgba(0,0,0,0.15);
+      padding: 18px;
+      box-sizing: border-box;
     }
-    .notes-wrap{
-      height:100%;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .notes-wrap .notes-area{
-      flex:1 1 auto;
-      min-height:0;
-    }
+    .modal.open{ display: flex; }
 
-    /* Browser app */
-    .browser-wrap{
-      height:100%;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .browser-bar{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    .browser-bar .field{
-      flex:1 1 auto;
-      min-width:0;
-    }
-    .browser-frame{
-      flex:1 1 auto;
-      min-height:0;
-      border:1px solid var(--win-border);
-      background:#000;
-      overflow:hidden;
-    }
-    .browser-frame iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background:#fff;
-    }
-
-    /* App iframe */
-    .app-frame{
-      width:100%;
-      height:100%;
-      border:1px solid var(--win-border);
-      overflow:hidden;
-      background:#000;
-    }
-    .app-frame iframe{
-      width:100%;
-      height:100%;
-      border:0;
-      background:#fff;
-    }
-
-    /* Modal dialog */
-    #modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:20000;
-      background: rgba(0,0,0,0.35);
-      padding:16px;
-      box-sizing:border-box;
-    }
-    #modal.show{ display:flex; }
     .dialog{
-      width:min(520px, 92vw);
-      background: var(--win-bg);
-      border:1px solid var(--win-border);
-      box-shadow:
-        inset 1px 1px 0 var(--win-highlight),
-        inset -1px -1px 0 var(--win-shadow),
-        2px 2px 0 rgba(0,0,0,0.25);
-      padding:12px;
+      width: min(460px, 92vw);
+      background: var(--os-face);
+      box-sizing: border-box;
+      color: var(--os-black);
     }
-    .dialog h3{
-      margin:0 0 10px 0;
-      font-size:16px;
+    .dialog .dtitle{
+      padding: 6px 8px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--titlebar-top), var(--titlebar-bot));
     }
-    .dialog .grid{
-      display:grid;
+    .dialog .dcontent{
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    .formrow{
+      display: grid;
       grid-template-columns: 110px 1fr;
-      gap:8px;
-      align-items:center;
+      gap: 8px;
+      align-items: center;
     }
-    .dialog .actions{
-      display:flex;
-      justify-content:flex-end;
-      gap:10px;
-      margin-top:12px;
+    .label{ font-weight: 600; }
+    .ro{
+      padding: 3px 6px;
+      background: var(--os-face2);
+      border-top: 1px solid var(--os-shadow);
+      border-left: 1px solid var(--os-shadow);
+      border-right: 1px solid var(--os-white);
+      border-bottom: 1px solid var(--os-white);
+      box-shadow: inset 0 0 0 1px var(--os-dark);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--os-black);
     }
-    .readonly{
-      opacity:0.9;
-      font-family: var(--mono);
+    .dbtns{
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--os-shadow);
+      background: linear-gradient(var(--chrome-top), var(--chrome-bot));
     }
 
-    /* Mobile sanity */
-    @media (max-width: 520px){
-      .menu{ padding:0 8px; }
-      .dropdown{ min-width: 200px; }
-      .desktop-icon{ width:78px; }
+    /* ===== Responsive tweaks ===== */
+    @media (max-width: 760px){
+      .window-body{ grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+      .sidebar{
+        grid-template-rows: auto auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--os-shadow);
+      }
+      .sidebar .statusbar{ display:none; }
+      .navlist{
+        display:flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding: 0 6px 6px 6px;
+      }
+      .navitem{ flex: 0 0 auto; }
+    }
+
+    @media (max-width: 640px){
+      table.list th:nth-child(3),
+      table.list td:nth-child(3),
+      table.list th:nth-child(4),
+      table.list td:nth-child(4){
+        display:none;
+      }
+      .formrow{ grid-template-columns: 1fr; }
+      :root{ --icon-cell-w: 86px; --icon-cell-h: 82px; }
+    }
+
+    @media (max-width: 480px){
+      table.list th:nth-child(2),
+      table.list td:nth-child(2){
+        display:none;
+      }
+      :root{ --icon-cell-w: 82px; --icon-cell-h: 78px; }
     }
   </style>
 </head>
 
 <body>
-  <div id="desktop">
-    <div id="menubar">
-      <div class="menu-left">
-        <div class="menu" data-menu="hedgehog" title="Hedgey">
-          <span class="logo">🦔</span>
-          <div class="dropdown">
-            <div class="item" data-action="fullscreen">Full Screen</div>
-            <div class="sep"></div>
-            <div class="item disabled">HedgeyOS</div>
-          </div>
-        </div>
-
-        <div class="menu" data-menu="file">File
-          <div class="dropdown">
-            <div class="item" data-action="new-files">New Files Window</div>
-            <div class="item" data-action="new-notes">New Notes</div>
-            <div class="item" data-action="new-browser">New Browser</div>
-          </div>
-        </div>
-
-        <div class="menu" data-menu="apps">Apps
-          <div class="dropdown" id="appsDropdown">
-            <!-- populated by JS -->
-          </div>
-        </div>
-      </div>
-
-      <div class="menu-right">
-        <div class="toggle-btn" id="darkToggle" title="Dark mode">☾</div>
+  <div class="menubar bevel-out hairline" id="menubar">
+    <div class="menu" data-menu="hedgey">
+      <span class="menu-label">🦔</span>
+      <div class="menu-dropdown bevel-out hairline">
+        <div class="menu-item" data-action="fullScreen">Full Screen</div>
+        <div class="menu-sep"></div>
+        <div class="menu-item" data-action="aboutSystem">About HedgeyOS</div>
       </div>
     </div>
 
-    <div id="desktop-icons"></div>
-    <div id="windows"></div>
+    <div class="menu" data-menu="file">
+      <span class="menu-label">File</span>
+      <div class="menu-dropdown bevel-out hairline">
+        <div class="menu-item" data-action="newFiles">New Files Window</div>
+        <div class="menu-item" data-action="newNotes">New Notes</div>
+      </div>
+    </div>
+
+    <div class="menu" data-menu="apps" id="appsMenu">
+      <span class="menu-label">Apps</span>
+      <div class="menu-dropdown bevel-out hairline" id="appsDropdown">
+        <div class="menu-item" data-app="files">Files</div>
+        <div class="menu-item" data-app="browser">Browser</div>
+        <div class="menu-item" data-app="notes">Notes</div>
+        <div class="menu-sep"></div>
+
+        <div class="menu-item" data-app="flipsideClassic">Flipside classic</div>
+        <div class="menu-item" data-app="flipside3d">Flipside 3D</div>
+        <div class="menu-item" data-app="unconnectedChat">Unconnected AI Chat</div>
+        <div class="menu-item" data-app="hedgeyTown">3D Hedgey Town</div>
+        <div class="menu-item" data-app="chordynaut">Chordynaut</div>
+        <div class="menu-item" data-app="about">About</div>
+        <div class="menu-sep"></div>
+
+        <div class="menu-item" data-app="terminal">DecenTerminal</div>
+        <div class="menu-item" data-app="python">PythonCity</div>
+        <div class="menu-item" data-app="ocean">OceanBoat</div>
+        <div class="menu-item" data-app="tetris">3dTetris</div>
+
+        <div class="menu-sep"></div>
+
+        <div class="menu-item menu-title">Saved Apps</div>
+        <div id="savedAppsList"></div>
+
+        <div class="menu-sep"></div>
+
+        <div class="menu-item menu-title">Open Windows</div>
+        <div id="openWindowsList"></div>
+      </div>
+    </div>
+
+    <div class="menubar-spacer"></div>
+    <button class="modebtn" id="modebtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
   </div>
 
-  <div id="modal" aria-hidden="true">
-    <div class="dialog">
-      <h3>Add New App to HedgeyOS?</h3>
-      <div class="grid">
-        <div>App Name:</div>
-        <input class="field" id="dlgName" placeholder="My App" />
+  <div class="desktop" id="desktop">
+    <div class="icon-layer" id="iconLayer"></div>
+  </div>
 
-        <div>URL:</div>
-        <div class="field readonly" id="dlgUrl"></div>
+  <!-- Save App Dialog -->
+  <div class="modal" id="saveModal" aria-hidden="true">
+    <div class="dialog bevel-out thick hairline">
+      <div class="dtitle">Add New App to HedgeyOS?</div>
+      <div class="dcontent">
+        <div class="formrow">
+          <div class="label">App Name:</div>
+          <input class="field" id="saveAppName" type="text" value="" />
+        </div>
+        <div class="formrow">
+          <div class="label">URL:</div>
+          <div class="ro" id="saveAppUrl"></div>
+        </div>
       </div>
-      <div class="actions">
-        <div class="btn" id="dlgNo">No</div>
-        <div class="btn" id="dlgYes">Yes</div>
+      <div class="dbtns">
+        <button class="btn" id="saveNo">No</button>
+        <button class="btn" id="saveYes">Yes</button>
       </div>
     </div>
   </div>
+
+  <template id="finderTemplate">
+    <div class="window bevel-out thick hairline" data-win>
+      <div class="titlebar bevel-out hairline" data-titlebar>
+        <div class="controls">
+          <div class="os9-box" title="Close" data-close></div>
+          <div class="os9-box" title="Minimize" data-minimize></div>
+        </div>
+        <div class="title"><span data-titletext>Files</span></div>
+        <div class="right">
+          <div class="os9-box" title="Zoom" data-zoom></div>
+        </div>
+      </div>
+
+      <div class="window-body">
+        <aside class="sidebar">
+          <div class="section-title">Places</div>
+          <ul class="navlist" data-nav>
+            <li class="navitem active"><div class="icon"></div> Applications</li>
+            <li class="navitem"><div class="icon"></div> Documents</li>
+            <li class="navitem"><div class="icon"></div> System Folder</li>
+            <li class="navitem"><div class="icon"></div> Desktop</li>
+            <li class="navitem"><div class="icon"></div> Library</li>
+          </ul>
+          <div class="statusbar">
+            <span>42 items</span>
+            <span>Infinity GB available</span>
+          </div>
+        </aside>
+
+        <main class="main">
+          <div class="toolbar">
+            <button class="btn" data-newwin>New Window</button>
+            <button class="btn">Sort</button>
+            <button class="btn">View</button>
+          </div>
+
+          <div class="listwrap">
+            <table class="list" data-list>
+              <thead>
+                <tr>
+                  <th style="width: 42%;">Name</th>
+                  <th style="width: 34%;">Date Modified</th>
+                  <th style="width: 12%;">Size</th>
+                  <th style="width: 12%;">Kind</th>
+                </tr>
+              </thead>
+              <tbody data-finder-rows></tbody>
+            </table>
+          </div>
+
+          <div class="statusbar">
+            <span data-status>Ready.</span>
+            <span>Finder-ish</span>
+          </div>
+        </main>
+      </div>
+
+      <div class="resize-grip" data-grip title="Resize"></div>
+    </div>
+  </template>
+
+  <template id="appTemplate">
+    <div class="window bevel-out thick hairline" data-win>
+      <div class="titlebar bevel-out hairline" data-titlebar>
+        <div class="controls">
+          <div class="os9-box" title="Close" data-close></div>
+          <div class="os9-box" title="Minimize" data-minimize></div>
+        </div>
+        <div class="title"><span data-titletext>App</span></div>
+        <div class="right">
+          <div class="os9-box" title="Zoom" data-zoom></div>
+        </div>
+      </div>
+
+      <div class="appwrap">
+        <iframe class="appframe" data-iframe src="about:blank"></iframe>
+      </div>
+
+      <div class="resize-grip" data-grip title="Resize"></div>
+    </div>
+  </template>
+
+  <template id="browserTemplate">
+    <div class="window bevel-out thick hairline" data-win>
+      <div class="titlebar bevel-out hairline" data-titlebar>
+        <div class="controls">
+          <div class="os9-box" title="Close" data-close></div>
+          <div class="os9-box" title="Minimize" data-minimize></div>
+        </div>
+        <div class="title"><span data-titletext>Browser</span></div>
+        <div class="right">
+          <div class="os9-box" title="Zoom" data-zoom></div>
+        </div>
+      </div>
+
+      <div class="browserwrap">
+        <div class="browserbar">
+          <input class="field" data-urlfield type="text" value="https://flipside.ink" />
+          <button class="btn" data-go>Go</button>
+          <button class="btn" data-save>Save</button>
+        </div>
+        <iframe class="appframe" data-iframe src="about:blank"></iframe>
+      </div>
+
+      <div class="resize-grip" data-grip title="Resize"></div>
+    </div>
+  </template>
+
+  <template id="notesTemplate">
+    <div class="window bevel-out thick hairline" data-win>
+      <div class="titlebar bevel-out hairline" data-titlebar>
+        <div class="controls">
+          <div class="os9-box" title="Close" data-close></div>
+          <div class="os9-box" title="Minimize" data-minimize></div>
+        </div>
+        <div class="title"><span data-titletext>Notes</span></div>
+        <div class="right">
+          <div class="os9-box" title="Zoom" data-zoom></div>
+        </div>
+      </div>
+
+      <div class="noteswrap">
+        <div class="notesbar">
+          <div class="notehint" data-notehint>Autosaves after 1s idle</div>
+          <div class="notehint" data-notestatus>Not saved yet</div>
+        </div>
+        <textarea class="notestext" data-notes placeholder="Type here..."></textarea>
+        <div class="statusbar">
+          <span>Ready.</span>
+          <span>Notes</span>
+        </div>
+      </div>
+
+      <div class="resize-grip" data-grip title="Resize"></div>
+    </div>
+  </template>
 
   <script>
-    (() => {
-      const $ = (sel, el=document) => el.querySelector(sel);
-      const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    // ===== Menu bar behavior =====
+    (function(){
+      const menubar = document.getElementById("menubar");
+      const menus = Array.from(menubar.querySelectorAll(".menu"));
 
-      const LS_THEME = "hedgeyos.theme";
-      const LS_NOTES = "hedgeyos.notes.text";
-      const LS_SAVED_APPS = "hedgeyos.savedApps";
-      const LS_FIRST_BOOT = "hedgeyos.didBoot";
+      function closeAll(){ menus.forEach(m => m.classList.remove("open")); }
 
-      const desktop = $("#desktop");
-      const windowsEl = $("#windows");
-      const iconsEl = $("#desktop-icons");
-      const appsDropdown = $("#appsDropdown");
+      menubar.addEventListener("click", (e) => {
+        const menu = e.target.closest(".menu");
+        if (!menu) return;
+        const already = menu.classList.contains("open");
+        closeAll();
+        if (!already) menu.classList.add("open");
+      });
 
-      const modal = $("#modal");
-      const dlgName = $("#dlgName");
-      const dlgUrl = $("#dlgUrl");
-      const dlgYes = $("#dlgYes");
-      const dlgNo = $("#dlgNo");
+      document.addEventListener("click", (e) => {
+        if (e.target.closest("#menubar")) return;
+        closeAll();
+      });
 
-      const darkToggle = $("#darkToggle");
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeAll();
+      });
+    })();
 
-      const DEFAULT_NOTES_TEXT = "HedgeyOS was made by Decentricity. Follow me on X!";
+    // ===== Dark mode toggle =====
+    (function(){
+      const btn = document.getElementById("modebtn");
+      const key = "hedgeyos_dark_mode";
 
-      const defaultApps = {
-        "flipside-classic": { title:"Flipside classic", url:"https://flipside.ink" },
-        "flipside-3d": { title:"Flipside 3D", url:"https://cubewalker.berrry.app" },
-        "unconnected-chat": { title:"Unconnected AI Chat", url:"https://chat.unconnected.ai" },
-        "hedgey-town": { title:"3D Hedgey Town", url:"https://blueprintwalk.berrry.app/" },
-        "chordynaut": { title:"Chordynaut", url:"https://chordynaut.com" },
-        "about": { title:"About", url:"https://decentricity.github.io" },
-
-        "terminal": { title:"DecenTerminal", url:"https://decentricityos.berrry.app/" },
-        "python": { title:"PythonCity", url:"https://pythoncity.berrry.app/" },
-        "ocean": { title:"OceanBoat", url:"https://oceanshader.berrry.app/" },
-        "tetris": { title:"3dTetris", url:"https://tetris3d.berrry.app/" },
-      };
-
-      const parodyFiles = [
-        "Hedgehog",
-        "Pig",
-        "Boarbarian",
-        "Flipside",
-        "Lina",
-        "Decentricity",
-        "Ms. Pandu Sastrowardoyo",
-        "inversebrah",
-        "Danceu",
-        "Fren",
-        "HedgeyTown",
-        "Chordynaut",
-        "Unconnected",
-        "SufferMon",
-        "GunDB",
-        "Pandan Studios",
-        "myriad.social",
-        "debio.ai",
-      ];
-
-      let zTop = 30;
-      let winSeq = 0;
-
-      const state = {
-        windows: new Map(), // id -> {id,type,title,el,icon,appKey,url}
-        activeId: null,
-        browserCurrentUrl: "https://decentricity.github.io",
-        pendingSaveFromBrowserId: null,
-      };
-
-      function clampPartial(v, min, max){ return Math.min(max, Math.max(min, v)); }
-
-      function setTheme(theme){
-        document.documentElement.setAttribute("data-theme", theme);
-        localStorage.setItem(LS_THEME, theme);
-        darkToggle.textContent = (theme === "dark") ? "☀" : "☾";
-        layoutIcons();
+      function apply(on){
+        document.body.classList.toggle("dark", !!on);
+        btn.textContent = on ? "☀" : "☾";
       }
 
-      function loadTheme(){
-        const saved = localStorage.getItem(LS_THEME);
-        setTheme(saved === "dark" ? "dark" : "light");
+      const saved = localStorage.getItem(key);
+      apply(saved === "1");
+
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const on = !document.body.classList.contains("dark");
+        apply(on);
+        localStorage.setItem(key, on ? "1" : "0");
+      });
+    })();
+
+    // ===== Default apps =====
+    const DEFAULT_APPS = {
+      flipsideClassic: { title: "Flipside classic", url: "https://flipside.ink" },
+      flipside3d:      { title: "Flipside 3D",      url: "https://cubewalker.berrry.app" },
+      unconnectedChat: { title: "Unconnected AI Chat", url: "https://chat.unconnected.ai" },
+      hedgeyTown:      { title: "3D Hedgey Town",   url: "https://blueprintwalk.berrry.app/" },
+      chordynaut:      { title: "Chordynaut",       url: "https://chordynaut.com" },
+      about:           { title: "About",            url: "https://decentricity.github.io" },
+
+      terminal:        { title: "DecenTerminal",    url: "https://decentricityos.berrry.app/" },
+      python:          { title: "PythonCity",       url: "https://pythoncity.berrry.app/" },
+      ocean:           { title: "OceanBoat",        url: "https://oceanshader.berrry.app/" },
+      tetris:          { title: "3dTetris",         url: "https://tetris3d.berrry.app/" },
+    };
+
+    // ===== Saved apps persistence =====
+    const SAVED_KEY = "hedgeyos_saved_apps_v1";
+
+    function loadSavedApps(){
+      try{
+        const raw = localStorage.getItem(SAVED_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter(x => x && typeof x.name === "string" && typeof x.url === "string")
+          .map(x => ({ name: x.name.trim(), url: x.url.trim() }))
+          .filter(x => x.name && x.url);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveSavedApps(list){
+      localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+    }
+
+    function normalizeUrl(url){
+      const u = (url || "").trim();
+      if (!u) return "";
+      if (/^https?:\/\//i.test(u)) return u;
+      return "https://" + u;
+    }
+
+    function upsertSavedApp(name, url){
+      const n = (name || "").trim();
+      const u = normalizeUrl(url);
+      if (!n || !u) return false;
+
+      const list = loadSavedApps();
+      const idxByUrl = list.findIndex(x => x.url.toLowerCase() === u.toLowerCase());
+
+      if (idxByUrl >= 0){
+        list[idxByUrl].name = n;
+        list[idxByUrl].url = u;
+      } else {
+        let finalName = n;
+        const taken = new Set(list.map(x => x.name.toLowerCase()));
+        if (taken.has(finalName.toLowerCase())){
+          let i = 2;
+          while (taken.has((finalName + " " + i).toLowerCase())) i++;
+          finalName = finalName + " " + i;
+        }
+        list.push({ name: finalName, url: u });
       }
 
-      function showModal(){
-        modal.classList.add("show");
+      saveSavedApps(list);
+      return true;
+    }
+
+    // ===== Save dialog controller =====
+    const SaveDialog = (() => {
+      const modal = document.getElementById("saveModal");
+      const nameField = document.getElementById("saveAppName");
+      const urlField = document.getElementById("saveAppUrl");
+      const btnNo = document.getElementById("saveNo");
+      const btnYes = document.getElementById("saveYes");
+
+      let currentUrl = "";
+      let onDone = null;
+
+      function open(url, suggestedName, doneCb){
+        currentUrl = url || "";
+        onDone = typeof doneCb === "function" ? doneCb : null;
+
+        urlField.textContent = currentUrl;
+        nameField.value = (suggestedName || "").trim() || "";
+
+        modal.classList.add("open");
         modal.setAttribute("aria-hidden","false");
+
+        setTimeout(() => {
+          nameField.focus();
+          nameField.select();
+        }, 0);
       }
-      function hideModal(){
-        modal.classList.remove("show");
+
+      function close(){
+        modal.classList.remove("open");
         modal.setAttribute("aria-hidden","true");
-        state.pendingSaveFromBrowserId = null;
+        currentUrl = "";
+        onDone = null;
       }
 
-      function savedAppsLoad(){
-        try{
-          const raw = localStorage.getItem(LS_SAVED_APPS);
-          if(!raw) return [];
-          const arr = JSON.parse(raw);
-          if(!Array.isArray(arr)) return [];
-          return arr.filter(x => x && typeof x.title==="string" && typeof x.url==="string");
-        }catch(_){ return []; }
+      btnNo.addEventListener("click", (e) => { e.stopPropagation(); close(); });
+      btnYes.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const name = nameField.value.trim();
+        const ok = upsertSavedApp(name, currentUrl);
+        if (ok && onDone) onDone();
+        close();
+      });
+
+      modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+
+      document.addEventListener("keydown", (e) => {
+        if (!modal.classList.contains("open")) return;
+        if (e.key === "Escape") close();
+        if (e.key === "Enter"){ e.preventDefault(); btnYes.click(); }
+      });
+
+      return { open, close };
+    })();
+
+    // ===== Icon system =====
+    const DesktopIcons = (() => {
+      const iconLayer = document.getElementById("iconLayer");
+      const desktop = document.getElementById("desktop");
+      const icons = new Map();
+
+      function splitTitleTwoLines(title){
+        const t = (title || "").trim();
+        if (!t) return ["", ""];
+        const max1 = 14;
+        const max2 = 14;
+        if (t.length <= max1) return [t, ""];
+        let cut = t.lastIndexOf(" ", max1);
+        if (cut < 6) cut = max1;
+        let line1 = t.slice(0, cut).trim();
+        let rest = t.slice(cut).trim();
+        if (rest.length <= max2) return [line1, rest];
+        let line2 = rest.slice(0, Math.max(0, max2 - 1)).trimEnd() + "…";
+        return [line1, line2];
       }
-      function savedAppsStore(arr){
-        localStorage.setItem(LS_SAVED_APPS, JSON.stringify(arr));
-      }
 
-      function buildAppsMenu(){
-        const saved = savedAppsLoad();
+      function computePositions(count){
+        const cs = getComputedStyle(document.documentElement);
+        const cellW = parseInt(cs.getPropertyValue("--icon-cell-w"), 10) || 92;
+        const cellH = parseInt(cs.getPropertyValue("--icon-cell-h"), 10) || 86;
+        const pad = parseInt(cs.getPropertyValue("--icon-pad"), 10) || 10;
 
-        const openWins = Array.from(state.windows.values())
-          .map(w => ({ id: w.id, title: w.title }));
+        const dw = desktop.clientWidth;
+        const dh = desktop.clientHeight;
 
-        const mk = (label, action, extra={}) => {
-          const div = document.createElement("div");
-          div.className = "item";
-          div.textContent = label;
-          div.dataset.action = action;
-          Object.assign(div.dataset, extra);
-          return div;
-        };
+        const cols = Math.max(1, Math.floor((dw - pad) / cellW));
+        const positions = [];
 
-        appsDropdown.innerHTML = "";
-
-        appsDropdown.appendChild(document.createElement("div")).className="heading";
-        appsDropdown.lastChild.textContent = "Core";
-
-        appsDropdown.appendChild(mk("Files", "open-core", { core:"files" }));
-        appsDropdown.appendChild(mk("Notes", "open-core", { core:"notes" }));
-        appsDropdown.appendChild(mk("Browser", "open-core", { core:"browser" }));
-
-        const sep1 = document.createElement("div"); sep1.className="sep"; appsDropdown.appendChild(sep1);
-
-        appsDropdown.appendChild(document.createElement("div")).className="heading";
-        appsDropdown.lastChild.textContent = "Apps";
-
-        Object.entries(defaultApps).forEach(([key, app]) => {
-          appsDropdown.appendChild(mk(app.title, "open-app", { app:key }));
-        });
-
-        const sep2 = document.createElement("div"); sep2.className="sep"; appsDropdown.appendChild(sep2);
-
-        appsDropdown.appendChild(document.createElement("div")).className="heading";
-        appsDropdown.lastChild.textContent = "Saved Apps";
-
-        if(saved.length === 0){
-          const d = document.createElement("div");
-          d.className="item disabled";
-          d.textContent="(none yet)";
-          appsDropdown.appendChild(d);
-        } else {
-          saved.forEach((app, idx) => {
-            appsDropdown.appendChild(mk(app.title, "open-saved-app", { idx:String(idx) }));
-          });
+        for (let i = 0; i < count; i++){
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const x = pad + col * cellW;
+          const y = dh - pad - cellH - row * cellH;
+          positions.push({ x, y });
         }
-
-        const sep3 = document.createElement("div"); sep3.className="sep"; appsDropdown.appendChild(sep3);
-
-        appsDropdown.appendChild(document.createElement("div")).className="heading";
-        appsDropdown.lastChild.textContent = "Open Windows";
-
-        if(openWins.length === 0){
-          const d = document.createElement("div");
-          d.className="item disabled";
-          d.textContent="(none)";
-          appsDropdown.appendChild(d);
-        } else {
-          openWins.forEach(w => {
-            appsDropdown.appendChild(mk(w.title, "focus-window", { id:w.id }));
-          });
-        }
+        return positions;
       }
 
-      function closeAllMenus(){
-        $$(".menu").forEach(m => m.classList.remove("active"));
-      }
-
-      function setupMenus(){
-        $$(".menu").forEach(menu => {
-          menu.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            const isActive = menu.classList.contains("active");
-            closeAllMenus();
-            if(!isActive) menu.classList.add("active");
-          });
-        });
-
-        document.addEventListener("pointerdown", (e) => {
-          const inMenu = e.target.closest && e.target.closest(".menu");
-          if(!inMenu && !modal.classList.contains("show")){
-            closeAllMenus();
-          }
-        });
-
-        desktop.addEventListener("pointerdown", (e) => {
-          // click on desktop background clears menus, but keeps windows
-          if(e.target === windowsEl || e.target === iconsEl || e.target === desktop){
-            closeAllMenus();
-          }
-        });
-
-        // menu actions
-        desktop.addEventListener("click", (e) => {
-          const item = e.target.closest && e.target.closest(".item");
-          if(!item) return;
-
-          const action = item.dataset.action;
-          if(!action) return;
-
-          closeAllMenus();
-
-          if(action === "fullscreen"){
-            toggleFullscreen();
-            return;
-          }
-          if(action === "new-files"){ openFilesWindow(); return; }
-          if(action === "new-notes"){ openNotesWindow(); return; }
-          if(action === "new-browser"){ openBrowserWindow(); return; }
-
-          if(action === "open-core"){
-            const core = item.dataset.core;
-            if(core === "files") openFilesWindow();
-            if(core === "notes") openNotesWindow();
-            if(core === "browser") openBrowserWindow();
-            return;
-          }
-
-          if(action === "open-app"){
-            const key = item.dataset.app;
-            const app = defaultApps[key];
-            if(app) openAppWindow(app.title, app.url, key);
-            return;
-          }
-
-          if(action === "open-saved-app"){
-            const idx = Number(item.dataset.idx);
-            const saved = savedAppsLoad();
-            const app = saved[idx];
-            if(app) openAppWindow(app.title, app.url, "saved:"+idx);
-            return;
-          }
-
-          if(action === "focus-window"){
-            const id = item.dataset.id;
-            if(id) focusWindow(id);
-            return;
-          }
-        });
-
-        // dark toggle
-        darkToggle.addEventListener("click", () => {
-          const cur = document.documentElement.getAttribute("data-theme") || "light";
-          setTheme(cur === "dark" ? "light" : "dark");
-        });
-      }
-
-      function toggleFullscreen(){
-        const el = document.documentElement;
-        if(!document.fullscreenElement){
-          el.requestFullscreen?.();
-        } else {
-          document.exitFullscreen?.();
-        }
-      }
-
-      function nextWindowRect(){
-        const vw = window.innerWidth;
-        const vh = window.innerHeight - parseInt(getComputedStyle(document.documentElement).getPropertyValue("--menubar-h"), 10);
-
-        const w = Math.max(280, Math.floor(vw * 0.80));
-        const h = Math.max(220, Math.floor(vh * 0.50));
-
-        const pad = 12;
-        const offset = 22 * (winSeq % 10);
-        const x = pad + offset;
-        const y = pad + offset;
-
-        winSeq++;
-        return { x, y, w, h };
-      }
-
-      function makeWindowShell(title){
-        const id = "w" + Math.random().toString(36).slice(2,10);
-
-        const win = document.createElement("div");
-        win.className = "window";
-        win.dataset.id = id;
-
-        const r = nextWindowRect();
-        win.style.left = r.x + "px";
-        win.style.top = r.y + "px";
-        win.style.width = r.w + "px";
-        win.style.height = r.h + "px";
-        win.style.zIndex = (++zTop).toString();
-
-        const tb = document.createElement("div");
-        tb.className = "titlebar";
-        tb.innerHTML = `
-          <div class="controls">
-            <div class="ctrl"></div>
-            <div class="ctrl"></div>
-          </div>
-          <div class="center-title">
-            <div class="lines">
-              <div class="lineblock"></div>
-              <div class="lineblock"></div>
-            </div>
-            <div class="title-text"></div>
-          </div>
-          <div style="width:18px"></div>
-        `;
-        $(".title-text", tb).textContent = title;
-
-        const inner = document.createElement("div");
-        inner.className = "window-inner";
-
-        const body = document.createElement("div");
-        body.className = "window-body";
-
-        const status = document.createElement("div");
-        status.className = "statusbar";
-        status.innerHTML = `<div>Ready.</div><div>Finder-ish</div>`;
-
-        const handle = document.createElement("div");
-        handle.className = "resize-handle";
-        handle.title = "Resize";
-
-        inner.appendChild(body);
-        inner.appendChild(status);
-
-        win.appendChild(tb);
-        win.appendChild(inner);
-        win.appendChild(handle);
-
-        // focus on any click inside window (body OR titlebar)
-        win.addEventListener("pointerdown", () => focusWindow(id));
-
-        // drag
-        enableDrag(win, tb);
-
-        // resize
-        enableResize(win, handle);
-
-        windowsEl.appendChild(win);
-
-        return { id, win, body, titleEl: $(".title-text", tb), statusEl: status };
-      }
-
-      function focusWindow(id){
-        const w = state.windows.get(id);
-        if(!w) return;
-        state.activeId = id;
-
-        // bring to top
-        w.el.style.zIndex = (++zTop).toString();
-
-        // inactive styling
-        state.windows.forEach((v) => v.el.classList.add("inactive"));
-        w.el.classList.remove("inactive");
-      }
-
-      function enableDrag(win, handleEl){
-        let dragging = false;
-        let startX=0, startY=0, startLeft=0, startTop=0;
-
-        handleEl.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          dragging = true;
-          win.setPointerCapture(e.pointerId);
-
-          const rect = win.getBoundingClientRect();
-          startX = e.clientX;
-          startY = e.clientY;
-          startLeft = rect.left;
-          startTop = rect.top;
-
-          focusWindow(win.dataset.id);
-        });
-
-        win.addEventListener("pointermove", (e) => {
-          if(!dragging) return;
-
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
-
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-
-          const rect = win.getBoundingClientRect();
-          const w = rect.width;
-          const h = rect.height;
-
-          // allow partially offscreen, but keep at least a sliver of titlebar accessible
-          const minVisible = 32;
-          const minX = -(w - minVisible);
-          const maxX = vw - minVisible;
-          const minY = -(h - minVisible);
-          const maxY = vh - minVisible;
-
-          const newLeft = clampPartial(startLeft + dx, minX, maxX);
-          const newTop = clampPartial(startTop + dy, minY, maxY);
-
-          win.style.left = newLeft + "px";
-          win.style.top = newTop + "px";
-        });
-
-        win.addEventListener("pointerup", (e) => {
-          if(!dragging) return;
-          dragging = false;
-          try { win.releasePointerCapture(e.pointerId); } catch(_){}
-          layoutIcons();
-        });
-      }
-
-      function enableResize(win, handleEl){
-        let resizing = false;
-        let startX=0, startY=0, startW=0, startH=0;
-
-        handleEl.addEventListener("pointerdown", (e) => {
-          e.preventDefault();
-          resizing = true;
-          win.setPointerCapture(e.pointerId);
-
-          const rect = win.getBoundingClientRect();
-          startX = e.clientX;
-          startY = e.clientY;
-          startW = rect.width;
-          startH = rect.height;
-
-          focusWindow(win.dataset.id);
-        });
-
-        win.addEventListener("pointermove", (e) => {
-          if(!resizing) return;
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
-
-          const minW = 260;
-          const minH = 180;
-
-          const newW = Math.max(minW, Math.floor(startW + dx));
-          const newH = Math.max(minH, Math.floor(startH + dy));
-
-          win.style.width = newW + "px";
-          win.style.height = newH + "px";
-        });
-
-        win.addEventListener("pointerup", (e) => {
-          if(!resizing) return;
-          resizing = false;
-          try { win.releasePointerCapture(e.pointerId); } catch(_){}
-          layoutIcons();
-        });
-      }
-
-      function iconEmojiForWindow(w){
-        if(w.type === "files") return "📂";
-        if(w.type === "notes") return "📑";
+      function glyphForKind(kind){
+        if (kind === "files") return "📂";
+        if (kind === "notes") return "📑";
         return "📔";
       }
 
-      function layoutIcons(){
-        // Icons exist "behind windows" (desktop), only for OPEN windows.
-        iconsEl.innerHTML = "";
+      function ensureIcon(id, title, kind, onClick){
+        let el = icons.get(id);
+        if (!el){
+          el = document.createElement("div");
+          el.className = "desk-icon";
+          el.dataset.winId = id;
 
-        const open = Array.from(state.windows.values());
+          const glyph = document.createElement("div");
+          glyph.className = "glyph";
+          el.appendChild(glyph);
 
-        // bottom-left packing: left-right then up
-        const inset = 12;
-        const startX = inset;
-        const startY = (window.innerHeight - inset) - 86; // near bottom
-        const stepX = 90;
-        const stepY = 92;
+          const label = document.createElement("div");
+          label.className = "label";
+          const l1 = document.createElement("div");
+          l1.className = "line";
+          const l2 = document.createElement("div");
+          l2.className = "line";
+          label.appendChild(l1);
+          label.appendChild(l2);
+          el.appendChild(label);
 
-        let col = 0, row = 0;
+          el.addEventListener("click", (e) => { e.stopPropagation(); onClick?.(id); });
 
-        open.forEach(w => {
-          const icon = document.createElement("div");
-          icon.className = "desktop-icon";
-          icon.dataset.id = w.id;
+          iconLayer.appendChild(el);
+          icons.set(id, el);
+        }
 
-          icon.innerHTML = `
-            <div class="emoji">${iconEmojiForWindow(w)}</div>
-            <div class="label"></div>
-          `;
-          $(".label", icon).textContent = w.title;
+        el.querySelector(".glyph").textContent = glyphForKind(kind);
+        const [a, b] = splitTitleTwoLines(title);
+        const lines = el.querySelectorAll(".line");
+        lines[0].textContent = a;
+        lines[1].textContent = b;
 
-          const x = startX + (col * stepX);
-          const y = startY - (row * stepY);
+        return el;
+      }
 
-          icon.style.left = x + "px";
-          icon.style.top = y + "px";
+      function removeIcon(id){
+        const el = icons.get(id);
+        if (el) el.remove();
+        icons.delete(id);
+      }
 
-          icon.addEventListener("click", (e) => {
+      function render(order, metaById, onClick){
+        const positions = computePositions(order.length);
+
+        for (let i = 0; i < order.length; i++){
+          const id = order[i];
+          const meta = metaById.get(id);
+          if (!meta) continue;
+          const el = ensureIcon(id, meta.title, meta.kind, onClick);
+          el.style.left = positions[i].x + "px";
+          el.style.top = positions[i].y + "px";
+        }
+
+        for (const existingId of Array.from(icons.keys())){
+          if (!metaById.has(existingId)) removeIcon(existingId);
+        }
+      }
+
+      return { render, removeIcon };
+    })();
+
+    // ===== Tiny WM =====
+    const WM = (() => {
+      const desktop = document.getElementById("desktop");
+      const finderTpl = document.getElementById("finderTemplate");
+      const appTpl = document.getElementById("appTemplate");
+      const browserTpl = document.getElementById("browserTemplate");
+      const notesTpl = document.getElementById("notesTemplate");
+      const openWindowsList = document.getElementById("openWindowsList");
+
+      let zTop = 20;
+      let idSeq = 1;
+      const state = new Map();
+
+      function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+      function deskRect(){ return desktop.getBoundingClientRect(); }
+      function deskSize(){ return { w: desktop.clientWidth, h: desktop.clientHeight }; }
+
+      function getTitle(win){
+        return win.querySelector("[data-titletext]")?.textContent?.trim() || "Window";
+      }
+
+      function refreshOpenWindowsMenu(){
+        openWindowsList.innerHTML = "";
+        const entries = Array.from(state.entries());
+
+        if (!entries.length){
+          const empty = document.createElement("div");
+          empty.className = "menu-item";
+          empty.textContent = "(none)";
+          empty.style.pointerEvents = "none";
+          empty.style.opacity = "0.75";
+          openWindowsList.appendChild(empty);
+          return;
+        }
+
+        entries.sort((a,b) => {
+          const za = parseInt(a[1].win.style.zIndex || "0", 10);
+          const zb = parseInt(b[1].win.style.zIndex || "0", 10);
+          return zb - za;
+        });
+
+        for (const [id, st] of entries){
+          const item = document.createElement("div");
+          item.className = "menu-item";
+          item.textContent = (st.minimized ? "◊ " : "") + st.title;
+          item.addEventListener("click", (e) => {
             e.stopPropagation();
-            focusWindow(w.id);
+            restore(id);
+            focus(id);
+            document.querySelectorAll("#menubar .menu").forEach(m => m.classList.remove("open"));
+          });
+          openWindowsList.appendChild(item);
+        }
+      }
+
+      function refreshIcons(){
+        const metaById = new Map();
+        const order = Array.from(state.entries())
+          .sort((a,b) => a[1].createdAt - b[1].createdAt)
+          .map(([id, st]) => {
+            metaById.set(id, { title: st.title, kind: st.kind });
+            return id;
           });
 
-          iconsEl.appendChild(icon);
-
-          col++;
-          if(x + stepX + 90 > window.innerWidth){
-            col = 0;
-            row++;
-          }
+        DesktopIcons.render(order, metaById, (id) => {
+          restore(id);
+          focus(id);
         });
       }
 
-      function openFilesWindow(){
-        const shell = makeWindowShell("Files");
-        const { id, win, body } = shell;
-
-        body.innerHTML = `
-          <div class="files-wrap">
-            <div class="files-toolbar">
-              <div class="btn">New Window</div>
-              <div class="btn">Sort</div>
-              <div class="btn">View</div>
-            </div>
-            <div class="files-grid">
-              <div class="files-header">
-                <div class="col-name">Name</div>
-              </div>
-              <div class="files-list" id="filesList"></div>
-            </div>
-          </div>
-        `;
-
-        const list = $("#filesList", body);
-        parodyFiles.forEach((name, i) => {
-          const row = document.createElement("div");
-          row.className = "row" + (i === 0 ? " selected" : "");
-          row.textContent = name;
-          row.addEventListener("click", () => {
-            $$(".row", list).forEach(r => r.classList.remove("selected"));
-            row.classList.add("selected");
-          });
-          list.appendChild(row);
-        });
-
-        state.windows.set(id, { id, type:"files", title:"Files", el:win });
-        focusWindow(id);
-        buildAppsMenu();
-        layoutIcons();
-
-        return id;
+      function focus(id){
+        for (const [wid, st] of state.entries()){
+          st.win.classList.toggle("inactive", wid !== id);
+        }
+        const st = state.get(id);
+        if (!st) return;
+        st.win.style.zIndex = String(++zTop);
+        refreshOpenWindowsMenu();
       }
 
-      function openNotesWindow(opts={}){
-        const shell = makeWindowShell(opts.title || "Notes");
-        const { id, win, body } = shell;
+      function minimize(id){
+        const st = state.get(id);
+        if (!st || st.minimized) return;
+        st.minimized = true;
+        st.win.style.display = "none";
+        refreshOpenWindowsMenu();
+        refreshIcons();
+      }
 
-        body.innerHTML = `
-          <div class="notes-wrap">
-            <textarea class="notes-area" id="notesArea" spellcheck="false"></textarea>
-          </div>
-        `;
+      function restore(id){
+        const st = state.get(id);
+        if (!st || !st.minimized) return;
+        st.minimized = false;
+        st.win.style.display = "grid";
+        refreshOpenWindowsMenu();
+        refreshIcons();
+      }
 
-        const area = $("#notesArea", body);
+      function close(id){
+        const st = state.get(id);
+        if (!st) return;
+        st.win.remove();
+        state.delete(id);
+        DesktopIcons.removeIcon(id);
 
-        // load from localStorage (single notes doc for now)
-        const saved = localStorage.getItem(LS_NOTES);
-        if(saved != null){
-          area.value = saved;
+        const last = Array.from(state.keys()).pop();
+        if (last) focus(last);
+
+        refreshOpenWindowsMenu();
+        refreshIcons();
+      }
+
+      function applyDefaultSize(win){
+        const { w: dw, h: dh } = deskSize();
+        const w = Math.max(320, Math.floor(dw * 0.8));
+        const h = Math.max(240, Math.floor(dh * 0.5));
+        win.style.width = w + "px";
+        win.style.height = h + "px";
+      }
+
+      function toggleZoom(id){
+        const st = state.get(id);
+        if (!st) return;
+
+        const { w: dw, h: dh } = deskSize();
+
+        if (!st.maximized){
+          const rect = st.win.getBoundingClientRect();
+          const dr = deskRect();
+          st.restoreRect = {
+            left: rect.left - dr.left,
+            top: rect.top - dr.top,
+            width: rect.width,
+            height: rect.height
+          };
+
+          const pad = 6;
+          st.win.style.left = pad + "px";
+          st.win.style.top = pad + "px";
+          st.win.style.width = Math.max(320, dw - pad * 2) + "px";
+          st.win.style.height = Math.max(240, dh - pad * 2) + "px";
+          st.maximized = true;
         } else {
-          area.value = (opts.prefill != null) ? opts.prefill : "";
+          const r = st.restoreRect;
+          if (r){
+            st.win.style.left = r.left + "px";
+            st.win.style.top = r.top + "px";
+            st.win.style.width = r.width + "px";
+            st.win.style.height = r.height + "px";
+          }
+          st.maximized = false;
         }
-
-        let t = null;
-        area.addEventListener("input", () => {
-          if(t) clearTimeout(t);
-          t = setTimeout(() => {
-            localStorage.setItem(LS_NOTES, area.value);
-          }, 1000);
-        });
-
-        state.windows.set(id, { id, type:"notes", title: opts.title || "Notes", el:win });
-        focusWindow(id);
-        buildAppsMenu();
-        layoutIcons();
-
-        return id;
+        focus(id);
+        refreshIcons();
       }
 
-      function openBrowserWindow(){
-        const shell = makeWindowShell("Browser");
-        const { id, win, body } = shell;
-
-        const initial = state.browserCurrentUrl || "https://decentricity.github.io";
-
-        body.innerHTML = `
-          <div class="browser-wrap">
-            <div class="browser-bar">
-              <input class="field" id="urlField" placeholder="https://..." />
-              <div class="btn" id="goBtn">Go</div>
-              <div class="btn" id="saveBtn">Save</div>
-            </div>
-            <div class="browser-frame">
-              <iframe id="browserFrame" sandbox="allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-popups"></iframe>
-            </div>
-          </div>
-        `;
-
-        const urlField = $("#urlField", body);
-        const goBtn = $("#goBtn", body);
-        const saveBtn = $("#saveBtn", body);
-        const frame = $("#browserFrame", body);
-
-        function nav(url){
-          state.browserCurrentUrl = url;
-          urlField.value = url;
-          frame.src = url;
-        }
-
-        goBtn.addEventListener("click", () => {
-          const u = (urlField.value || "").trim();
-          if(!u) return;
-          nav(u);
-        });
-
-        urlField.value = initial;
-        frame.src = initial;
-
-        saveBtn.addEventListener("click", () => {
-          // capture current browser url
-          const current = (urlField.value || "").trim() || state.browserCurrentUrl;
-          if(!current) return;
-
-          state.pendingSaveFromBrowserId = id;
-          dlgName.value = "";
-          dlgUrl.textContent = current;
-          showModal();
-          dlgName.focus();
-        });
-
-        state.windows.set(id, { id, type:"browser", title:"Browser", el:win });
-        focusWindow(id);
-        buildAppsMenu();
-        layoutIcons();
-
-        return id;
+      function dragBounds(){
+        const { w: dw, h: dh } = deskSize();
+        const keep = 40;
+        const offX = Math.floor(dw * 0.4);
+        const offY = Math.floor(dh * 0.4);
+        return {
+          minLeft: -offX,
+          maxLeft: (dw - keep),
+          minTop: -offY,
+          maxTop: (dh - keep),
+        };
       }
 
-      function openAppWindow(title, url, appKey){
-        const shell = makeWindowShell(title);
-        const { id, win, body } = shell;
+      function makeDraggable(id, win){
+        const bar = win.querySelector("[data-titlebar]");
+        let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
 
-        body.innerHTML = `
-          <div class="app-frame">
-            <iframe sandbox="allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-popups" src="${escapeHtml(url)}"></iframe>
-          </div>
-        `;
+        win.addEventListener("pointerdown", () => focus(id), { capture: true });
 
-        state.windows.set(id, { id, type:"app", title, el:win, appKey, url });
-        focusWindow(id);
-        buildAppsMenu();
-        layoutIcons();
+        bar.addEventListener("pointerdown", (e) => {
+          const onControl = e.target.closest("[data-close],[data-minimize],[data-zoom]");
+          if (onControl) return;
+          if (state.get(id)?.maximized) return;
 
-        return id;
+          e.preventDefault();
+          dragging = true;
+          bar.setPointerCapture(e.pointerId);
+          startX = e.clientX;
+          startY = e.clientY;
+
+          const rect = win.getBoundingClientRect();
+          const dr = deskRect();
+          startLeft = rect.left - dr.left;
+          startTop  = rect.top - dr.top;
+        }, { passive: false });
+
+        bar.addEventListener("pointermove", (e) => {
+          if (!dragging) return;
+          e.preventDefault();
+
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          const b = dragBounds();
+          const newLeft = clamp(startLeft + dx, b.minLeft, b.maxLeft);
+          const newTop  = clamp(startTop + dy, b.minTop, b.maxTop);
+
+          win.style.left = newLeft + "px";
+          win.style.top  = newTop + "px";
+        }, { passive: false });
+
+        bar.addEventListener("pointerup", () => dragging = false);
+        bar.addEventListener("pointercancel", () => dragging = false);
+        bar.addEventListener("dblclick", () => toggleZoom(id));
+      }
+
+      function makeResizable(id, win){
+        const grip = win.querySelector("[data-grip]");
+        let resizing = false, startX = 0, startY = 0, startW = 0, startH = 0;
+
+        grip.addEventListener("pointerdown", (e) => {
+          if (state.get(id)?.maximized) return;
+          e.preventDefault();
+
+          resizing = true;
+          grip.setPointerCapture(e.pointerId);
+          startX = e.clientX;
+          startY = e.clientY;
+
+          const rect = win.getBoundingClientRect();
+          startW = rect.width;
+          startH = rect.height;
+        }, { passive: false });
+
+        grip.addEventListener("pointermove", (e) => {
+          if (!resizing) return;
+          e.preventDefault();
+
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          const rect = win.getBoundingClientRect();
+          const dr = deskRect();
+          const left = rect.left - dr.left;
+          const top  = rect.top - dr.top;
+
+          const { w: dw, h: dh } = deskSize();
+          const maxW = dw + Math.max(0, -left);
+          const maxH = dh + Math.max(0, -top);
+
+          const newW = clamp(startW + dx, 320, Math.max(320, maxW));
+          const newH = clamp(startH + dy, 240, Math.max(240, maxH));
+
+          win.style.width = newW + "px";
+          win.style.height = newH + "px";
+        }, { passive: false });
+
+        grip.addEventListener("pointerup", () => resizing = false);
+        grip.addEventListener("pointercancel", () => resizing = false);
+      }
+
+      function randChoice(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+      function buildFinderRows(tbody){
+        const fakeNames = [
+          "Hedgehog", "Pig", "Boarbarian", "Flipside", "Lina",
+          "Decentricity", "Ms. Pandu Sastrowardoyo", "inversebrah",
+          "Danceu", "Fren", "HedgeyTown", "Chordynaut", "Unconnected",
+          "SufferMon", "GunDB", "Pandan Studios", "myriad.social",
+          "debio.ai", "blocksphere", "hedgey.sock", "kernel_hedgehog",
+          "probably_not_a_virus", "definitely_a_virus", "tiny_psa.txt"
+        ];
+
+        const kinds = ["folder", "document", "alias", "mystery", "aesthetic artifact"];
+        const dates = [
+          "Yesterday, 9:09 AM",
+          "Thu, May 1, 2003, 11:49 PM",
+          "Mon, Jul 14, 2003, 12:24 PM",
+          "Wed, Jun 11, 2003, 9:08 AM",
+          "Fri, Jul 11, 2003, 12:28 PM",
+          "Just now",
+          "Back in the Before Times"
+        ];
+        const sizes = ["--", "4 K", "42 K", "692 K", "3.5 MB", "13.37 MB", "∞"];
+
+        const rows = [];
+        for (let i = 0; i < 18; i++){
+          rows.push({
+            name: fakeNames[i] || ("mystery_" + (i+1)),
+            date: randChoice(dates),
+            size: randChoice(sizes),
+            kind: randChoice(kinds),
+          });
+        }
+
+        tbody.innerHTML = "";
+        rows.forEach((r, idx) => {
+          const tr = document.createElement("tr");
+          tr.className = "row" + (idx === 0 ? " selected" : "");
+          tr.innerHTML = `
+            <td>${escapeHtml(r.name)}</td>
+            <td>${escapeHtml(r.date)}</td>
+            <td>${escapeHtml(r.size)}</td>
+            <td>${escapeHtml(r.kind)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
       }
 
       function escapeHtml(s){
-        return String(s)
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
+        return String(s).replace(/[&<>"']/g, (c) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+        }[c]));
       }
 
-      // modal buttons
-      dlgNo.addEventListener("click", hideModal);
-      modal.addEventListener("pointerdown", (e) => {
-        if(e.target === modal) hideModal();
-      });
+      function wireFinderUI(win){
+        const nav = win.querySelector("[data-nav]");
+        const list = win.querySelector("[data-list]");
+        const status = win.querySelector("[data-status]");
+        const tbody = win.querySelector("[data-finder-rows]");
 
-      dlgYes.addEventListener("click", () => {
-        const name = (dlgName.value || "").trim();
-        const url = (dlgUrl.textContent || "").trim();
-        if(!name || !url){ hideModal(); return; }
+        buildFinderRows(tbody);
 
-        const saved = savedAppsLoad();
-        saved.push({ title:name, url });
-        savedAppsStore(saved);
+        nav.addEventListener("click", (e) => {
+          const li = e.target.closest(".navitem");
+          if (!li) return;
+          nav.querySelectorAll(".navitem").forEach(x => x.classList.remove("active"));
+          li.classList.add("active");
+        });
 
-        hideModal();
-        buildAppsMenu();
-      });
+        list.addEventListener("click", (e) => {
+          const tr = e.target.closest("tr.row");
+          if (!tr) return;
+          list.querySelectorAll("tr.row").forEach(r => r.classList.remove("selected"));
+          tr.classList.add("selected");
+          if (status) status.textContent = "Selected: " + tr.children[0].textContent;
+        });
 
-      // window resize should reflow icons
-      window.addEventListener("resize", () => {
-        layoutIcons();
-      });
-
-      function firstBoot(){
-        const did = localStorage.getItem(LS_FIRST_BOOT);
-        if(did) return;
-
-        // Create Files first, then Notes on top
-        openFilesWindow();
-        openNotesWindow({ title:"Notes", prefill: DEFAULT_NOTES_TEXT });
-
-        localStorage.setItem(LS_FIRST_BOOT, "1");
+        const newWinBtn = win.querySelector("[data-newwin]");
+        if (newWinBtn) newWinBtn.addEventListener("click", () => createFilesWindow());
       }
 
-      function normalBoot(){
-        // Always have at least Files on startup
-        openFilesWindow();
+      function wireAppUI(win, url){
+        const iframe = win.querySelector("[data-iframe]");
+        iframe.src = url;
       }
 
-      // init
-      loadTheme();
-      setupMenus();
-      buildAppsMenu();
+      function wireBrowserUI(win){
+        const field = win.querySelector("[data-urlfield]");
+        const goBtn = win.querySelector("[data-go]");
+        const saveBtn = win.querySelector("[data-save]");
+        const iframe = win.querySelector("[data-iframe]");
 
-      // ensure something opens
-      if(localStorage.getItem(LS_FIRST_BOOT)){
-        normalBoot();
-        // also open notes if notes exist, but keep it lightweight
-        const savedNotes = localStorage.getItem(LS_NOTES);
-        if(savedNotes && savedNotes.trim()){
-          openNotesWindow({ title:"Notes" });
+        function setUrl(u){
+          const url = (u || "").trim();
+          if (!url) return;
+          const norm = /^https?:\/\//i.test(url) ? url : ("https://" + url);
+          field.value = norm;
+          iframe.src = norm;
         }
-      } else {
-        firstBoot();
+
+        goBtn.addEventListener("click", () => setUrl(field.value));
+        field.addEventListener("keydown", (e) => {
+          if (e.key === "Enter"){
+            e.preventDefault();
+            setUrl(field.value);
+          }
+        });
+
+        saveBtn.addEventListener("click", () => {
+          const current = (iframe.getAttribute("src") || field.value || "").trim();
+          const url = /^https?:\/\//i.test(current) ? current : ("https://" + current);
+
+          const guessName = (() => {
+            try{
+              const host = new URL(url).hostname.replace(/^www\./i,"");
+              return host || "New App";
+            } catch {
+              return "New App";
+            }
+          })();
+
+          SaveDialog.open(url, guessName, () => {
+            AppsMenu.renderSavedApps();
+          });
+        });
+
+        setUrl(field.value);
       }
 
-      // make sure icons exist after boot
-      setTimeout(layoutIcons, 0);
+      function wireNotesUI(win, opts){
+        const ta = win.querySelector("[data-notes]");
+        const status = win.querySelector("[data-notestatus]");
+        const key = "hedgeyos_notes_v1";
 
-      // make desktop background click not select text
-      desktop.addEventListener("dragstart", (e) => e.preventDefault());
+        const prefill = (opts && typeof opts.prefill === "string") ? opts.prefill : null;
+        const forcePrefill = !!(opts && opts.forcePrefill);
+
+        const saved = localStorage.getItem(key);
+        if (typeof saved === "string" && !forcePrefill){
+          ta.value = saved;
+        } else if (prefill !== null){
+          ta.value = prefill;
+          localStorage.setItem(key, ta.value);
+        }
+
+        let t = null;
+        function setStatus(txt){
+          if (status) status.textContent = txt;
+        }
+
+        function doSave(){
+          localStorage.setItem(key, ta.value);
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, "0");
+          const mm = String(now.getMinutes()).padStart(2, "0");
+          const ss = String(now.getSeconds()).padStart(2, "0");
+          setStatus("Saved at " + hh + ":" + mm + ":" + ss);
+        }
+
+        function scheduleSave(){
+          setStatus("Typing...");
+          if (t) clearTimeout(t);
+          t = setTimeout(doSave, 1000);
+        }
+
+        ta.addEventListener("input", scheduleSave);
+        ta.addEventListener("blur", () => {
+          if (t) { clearTimeout(t); t = null; }
+          doSave();
+        });
+
+        setStatus(saved ? "Loaded" : "Not saved yet");
+        setTimeout(() => ta.focus(), 0);
+      }
+
+      function spawn(tpl, title, extra){
+        const id = "w" + (idSeq++);
+        const frag = tpl.content.cloneNode(true);
+        const win = frag.querySelector("[data-win]");
+
+        win.dataset.id = id;
+        win.style.zIndex = String(++zTop);
+
+        applyDefaultSize(win);
+
+        const { w: dw, h: dh } = deskSize();
+        const wNow = parseFloat(win.style.width) || 400;
+        const hNow = parseFloat(win.style.height) || 300;
+
+        const baseLeft = 6 + 18 * (idSeq - 2);
+        const baseTop  = 6 + 18 * (idSeq - 2);
+
+        win.style.left = clamp(baseLeft, 0, Math.max(0, dw - wNow)) + "px";
+        win.style.top  = clamp(baseTop, 0, Math.max(0, dh - hNow)) + "px";
+
+        const titleText = win.querySelector("[data-titletext]");
+        if (titleText && title) titleText.textContent = title;
+
+        desktop.appendChild(win);
+
+        const st = {
+          win,
+          minimized: false,
+          maximized: false,
+          restoreRect: null,
+          title: getTitle(win),
+          kind: extra?.kind || "window",
+          createdAt: Date.now() + idSeq
+        };
+        state.set(id, st);
+
+        win.querySelector("[data-close]").addEventListener("click", () => close(id));
+        win.querySelector("[data-minimize]").addEventListener("click", () => minimize(id));
+        win.querySelector("[data-zoom]").addEventListener("click", () => toggleZoom(id));
+
+        makeDraggable(id, win);
+        makeResizable(id, win);
+
+        if (tpl === finderTpl) wireFinderUI(win);
+        if (tpl === appTpl) wireAppUI(win, extra?.url || "about:blank");
+        if (tpl === browserTpl) wireBrowserUI(win);
+        if (tpl === notesTpl) wireNotesUI(win, extra?.notesOpts || null);
+
+        st.title = getTitle(win);
+        focus(id);
+        refreshOpenWindowsMenu();
+        refreshIcons();
+
+        return id;
+      }
+
+      function createFilesWindow(){
+        return spawn(finderTpl, "Files", { kind: "files" });
+      }
+
+      function createBrowserWindow(){
+        return spawn(browserTpl, "Browser", { kind: "browser" });
+      }
+
+      function createAppWindow(title, url){
+        return spawn(appTpl, title, { kind: "app", url });
+      }
+
+      function createNotesWindow(notesOpts){
+        return spawn(notesTpl, "Notes", { kind: "notes", notesOpts: notesOpts || null });
+      }
+
+      window.addEventListener("resize", () => {
+        refreshIcons();
+        refreshOpenWindowsMenu();
+      });
+
+      return {
+        createFilesWindow,
+        createBrowserWindow,
+        createNotesWindow,
+        createAppWindow,
+        refreshOpenWindowsMenu,
+        refreshIcons,
+        focus,
+        restore,
+      };
+    })();
+
+    // ===== Apps menu renderer =====
+    const AppsMenu = (() => {
+      const savedAppsList = document.getElementById("savedAppsList");
+
+      function clearNode(node){
+        while (node.firstChild) node.removeChild(node.firstChild);
+      }
+
+      function renderSavedApps(){
+        clearNode(savedAppsList);
+        const saved = loadSavedApps();
+
+        if (!saved.length){
+          const empty = document.createElement("div");
+          empty.className = "menu-item";
+          empty.textContent = "(none)";
+          empty.style.pointerEvents = "none";
+          empty.style.opacity = "0.75";
+          savedAppsList.appendChild(empty);
+          return;
+        }
+
+        for (const item of saved){
+          const row = document.createElement("div");
+          row.className = "menu-item";
+          row.textContent = item.name;
+          row.setAttribute("data-saved-name", item.name);
+          row.setAttribute("data-saved-url", item.url);
+          savedAppsList.appendChild(row);
+        }
+      }
+
+      return { renderSavedApps };
+    })();
+
+    // ===== Fullscreen helper =====
+    async function requestFullScreen(){
+      try{
+        const el = document.documentElement;
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          if (el.requestFullscreen) await el.requestFullscreen();
+        }
+      } catch {
+        // ignore; some mobile browsers are spicy about gestures
+      }
+    }
+
+    // ===== Menu actions + boot =====
+    (function(){
+      const menubar = document.getElementById("menubar");
+
+      menubar.addEventListener("click", (e) => {
+        const action = e.target.getAttribute("data-action");
+        const app = e.target.getAttribute("data-app");
+
+        const savedRow = e.target.closest("[data-saved-url]");
+        if (savedRow){
+          const title = savedRow.getAttribute("data-saved-name") || "App";
+          const url = savedRow.getAttribute("data-saved-url") || "about:blank";
+          WM.createAppWindow(title, url);
+          e.stopPropagation();
+          return;
+        }
+
+        if (action === "fullScreen"){
+          requestFullScreen();
+        }
+
+        if (action === "aboutSystem"){
+          WM.createAppWindow("About", DEFAULT_APPS.about.url);
+        }
+        if (action === "newFiles"){
+          WM.createFilesWindow();
+        }
+        if (action === "newNotes"){
+          WM.createNotesWindow();
+        }
+
+        if (app === "files"){
+          WM.createFilesWindow();
+        } else if (app === "browser"){
+          WM.createBrowserWindow();
+        } else if (app === "notes"){
+          WM.createNotesWindow();
+        } else if (app && DEFAULT_APPS[app]){
+          WM.createAppWindow(DEFAULT_APPS[app].title, DEFAULT_APPS[app].url);
+        }
+
+        if (e.target.closest("#appsMenu")){
+          WM.refreshOpenWindowsMenu();
+          WM.refreshIcons();
+        }
+
+        if (action || app || savedRow) e.stopPropagation();
+      });
+
+      // boot
+      AppsMenu.renderSavedApps();
+
+      const BOOT_KEY = "hedgeyos_booted_v1";
+      const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
+
+      WM.createFilesWindow();
+
+      if (firstBoot){
+        const pre = "HedgeyOS was made by Decentricity. Follow me on X!";
+        WM.createNotesWindow({ prefill: pre, forcePrefill: true });
+        localStorage.setItem(BOOT_KEY, "1");
+      } else {
+        // still show Notes on boot, but use persisted notes
+        WM.createNotesWindow();
+      }
     })();
   </script>
 </body>
