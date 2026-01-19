@@ -406,6 +406,13 @@
     body.beos .window.bevel-out{
       background: transparent;
     }
+    body.beos .window.bevel-out,
+    body.beos .window.bevel-out.thick{
+      border-top: 0;
+    }
+    body.beos .window.hairline{
+      outline: none;
+    }
     body.dark .title:before,
     body.dark .title:after{
       background:
