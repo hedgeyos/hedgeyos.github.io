@@ -505,17 +505,29 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       term.writeln("HedgeyOS WebAssembly Shell");
 
       const instance = await pkg.entrypoint.run({
-        args: [],
+        args: ["-i"],
         mount: { "/home": home },
         cwd: "/home",
+        env: {
+          TERM: "xterm-256color",
+          PS1: "\\u@hedgey:\\w$ ",
+        },
       });
 
       const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
       const stdin = instance.stdin?.getWriter();
       term.onData((data) => stdin?.write(encoder.encode(data)));
 
-      instance.stdout?.pipeTo(new WritableStream({ write: (chunk) => term.write(chunk) }));
-      instance.stderr?.pipeTo(new WritableStream({ write: (chunk) => term.write(chunk) }));
+      const writeStream = new WritableStream({
+        write: (chunk) => term.write(decoder.decode(chunk)),
+      });
+      instance.stdout?.pipeTo(writeStream);
+      instance.stderr?.pipeTo(writeStream);
+
+      instance.wait?.().then(() => {
+        term.writeln("\r\n[process exited]");
+      });
 
       const ro = new ResizeObserver(() => {
         if (fitAddon) fitAddon.fit();
