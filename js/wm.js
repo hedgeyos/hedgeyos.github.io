@@ -8,6 +8,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
   let zTop = 20;
   let idSeq = 1;
+  let activeId = null;
   const state = new Map();
 
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
@@ -73,9 +74,15 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
     const st = state.get(id);
     if (!st) return;
+    activeId = id;
     st.win.style.zIndex = String(++zTop);
+    if (st.term) st.term.focus();
+    if (st.term) {
+      st.term.focus();
+    }
     refreshOpenWindowsMenu();
   }
+
 
   function minimize(id){
     const st = state.get(id);
@@ -98,6 +105,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
   function close(id){
     const st = state.get(id);
     if (!st) return;
+    if (st.emulator) {
+      st.emulator.destroy?.();
+      st.emulator = null;
+    }
     st.win.remove();
     state.delete(id);
     DesktopIcons.removeIcon(id);
@@ -450,104 +461,109 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
   }
 
   function wireTerminalUI(win){
-    const host = win.querySelector("[data-terminal]");
-    if (!host) return;
+    const screen = win.querySelector("[data-v86-screen]");
+    const statusEl = win.querySelector("[data-v86-status]");
+    const capture = win.querySelector("[data-v86-capture]");
+    const keyOverlay = win.querySelector("[data-v86-keys]");
+    if (!screen) return;
 
-    (async () => {
-      const TerminalCtor = window.Terminal;
-      if (!TerminalCtor){
-        host.textContent = "Terminal engine not available.";
+    const setStatus = (text) => {
+      if (statusEl) statusEl.textContent = text;
+    };
+
+    if (!window.V86Starter) {
+      setStatus("v86 engine not available.");
+      return;
+    }
+
+    screen.tabIndex = 0;
+    const st = state.get(win.dataset.id);
+
+    const emulator = new window.V86Starter({
+      wasm_path: "vendor/v86/v86.wasm",
+      screen_container: screen,
+      bios: { url: "vendor/v86/bios/seabios.bin" },
+      vga_bios: { url: "vendor/v86/bios/vgabios.bin" },
+      bzimage: { url: "vendor/v86/buildroot-bzimage.bin", size: 5166352 },
+      cmdline: "tsc=reliable mitigations=off random.trust_cpu=on",
+      autostart: true,
+      memory_size: 256 * 1024 * 1024,
+      vga_memory_size: 8 * 1024 * 1024,
+    });
+
+    emulator.add_listener("download-progress", (evt) => {
+      if (!evt.lengthComputable) {
+        setStatus("Loading Buildroot Linux...");
         return;
       }
+      const pct = Math.min(100, Math.round((evt.loaded / evt.total) * 100));
+      setStatus(`Loading Buildroot Linux... ${pct}%`);
+    });
 
-      const term = new TerminalCtor({ cursorBlink: true, convertEol: true });
-      const fitAddon = window.FitAddon?.FitAddon ? new window.FitAddon.FitAddon() : null;
-      if (fitAddon) term.loadAddon(fitAddon);
+    emulator.add_listener("download-error", () => {
+      setStatus("Failed to download v86 assets.");
+    });
 
-      term.open(host);
-      if (fitAddon) fitAddon.fit();
-      term.writeln("Starting Wasmer shell...");
+    emulator.add_listener("emulator-loaded", () => {
+      setStatus("Buildroot Linux booting...");
+    });
 
-      if (!window.crossOriginIsolated) {
-        term.writeln("Shell needs cross-origin isolation (COOP/COEP).");
-        term.writeln("Reload the page to let the service worker activate.");
-        term.writeln("");
+    const focusScreen = () => {
+      if (capture) capture.focus();
+      screen.focus();
+      emulator.keyboard_set_status?.(true);
+    };
+    win.addEventListener("pointerdown", focusScreen);
+    screen.addEventListener("pointerdown", focusScreen);
+    const sendSpecialKey = (key) => {
+      const map = {
+        Enter: 13,
+        Backspace: 8,
+        Tab: 9,
+        Escape: 27,
+        ArrowUp: 38,
+        ArrowDown: 40,
+        ArrowLeft: 37,
+        ArrowRight: 39,
+        Insert: 45,
+        Delete: 46,
+        Home: 36,
+        End: 35,
+        PageUp: 33,
+        PageDown: 34,
+      };
+      const keyCode = map[key];
+      if (!keyCode) return false;
+      if (key === "Enter" && emulator.keyboard_send_scancodes) {
+        emulator.keyboard_send_scancodes([0x1c, 0x9c]);
+      } else {
+        emulator.keyboard_send_keys?.([keyCode]);
       }
+      return true;
+    };
 
-      let WasmerSDK = null;
-      try{
-        WasmerSDK = await import("https://unpkg.com/@wasmer/sdk@0.10.0/dist/index.mjs");
-      } catch (err){
-        term.writeln("Failed to load Wasmer SDK.");
-        term.writeln(String(err));
-        return;
-      }
-
-      const { init, Wasmer, Directory } = WasmerSDK;
-      const wasmUrl = new URL("https://unpkg.com/@wasmer/sdk@0.10.0/dist/wasmer_js_bg.wasm");
-      const workerUrl = "https://unpkg.com/@wasmer/sdk@0.10.0/dist/index.mjs";
-
-      try{
-        await init({ module: wasmUrl, workerUrl });
-      } catch (err){
-        term.writeln("Failed to initialize Wasmer runtime.");
-        term.writeln(String(err));
-        return;
-      }
-
-      const home = new Directory();
-      await home.writeFile("README.txt", "Welcome to HedgeyOS shell.\n");
-
-      let instance = null;
-      const shells = ["sharrattj/bash", "sharrattj/dash"];
-      for (const name of shells) {
-        try{
-          term.writeln(`Loading ${name}...`);
-          const pkg = await Wasmer.fromRegistry(name);
-          term.reset();
-          term.writeln("HedgeyOS WebAssembly Shell");
-          instance = await pkg.entrypoint.run({
-            args: ["-i"],
-            mount: { "/home": home },
-            cwd: "/home",
-            env: {
-              TERM: "xterm-256color",
-              PS1: "\\u@hedgey:\\w$ ",
-            },
-          });
-          break;
-        } catch (err){
-          term.writeln(`Failed to start ${name}.`);
-          term.writeln(String(err));
-          term.writeln("");
+    if (capture) {
+      capture.tabIndex = 0;
+      capture.setAttribute("aria-label", "Terminal input capture");
+      capture.setAttribute("contenteditable", "true");
+      capture.addEventListener("pointerdown", focusScreen);
+      capture.addEventListener("keydown", (e) => {
+        const sentSpecial = sendSpecialKey(e.key);
+        if (!sentSpecial && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          emulator.keyboard_send_text?.(e.key);
         }
-      }
-
-      if (!instance) {
-        term.writeln("No shell could be started.");
-        return;
-      }
-
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-      const stdin = instance.stdin?.getWriter();
-      term.onData((data) => stdin?.write(encoder.encode(data)));
-
-      const writeStream = new WritableStream({
-        write: (chunk) => term.write(decoder.decode(chunk)),
+        if (keyOverlay) {
+          keyOverlay.textContent = `Key: ${e.key}  Code: ${e.code || "n/a"}  KeyCode: ${e.keyCode || 0}`;
+        }
+        e.preventDefault();
       });
-      instance.stdout?.pipeTo(writeStream);
-      instance.stderr?.pipeTo(writeStream);
+    }
 
-      instance.wait?.().then(() => {
-        term.writeln("\r\n[process exited]");
-      });
+    // Avoid dynamic scale changes on resize; CSS stretching keeps the view stable.
 
-      const ro = new ResizeObserver(() => {
-        if (fitAddon) fitAddon.fit();
-      });
-      ro.observe(host);
-    })();
+    if (st) {
+      st.emulator = emulator;
+    }
   }
 
   function wireThemesUI(win){

@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HedgeyOS</title>
   <script src="coi-serviceworker.js"></script>
-  <link rel="stylesheet" href="vendor/xterm/xterm.css" />
-
   <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -252,7 +250,15 @@
       </div>
 
       <div class="terminalwrap">
-        <div class="terminalhost" data-terminal></div>
+        <div class="v86-shell">
+          <div class="v86-screen" data-v86-screen>
+            <canvas></canvas>
+            <div class="v86-text"></div>
+            <div class="v86-capture" data-v86-capture></div>
+            <div class="v86-key-overlay" data-v86-keys>Keys: (waiting)</div>
+          </div>
+          <div class="v86-status" data-v86-status>Preparing Buildroot Linux...</div>
+        </div>
       </div>
 
       <div class="resize-grip" data-grip title="Resize"></div>
@@ -297,8 +303,7 @@
     </div>
   </template>
 
-  <script src="vendor/xterm/xterm.js"></script>
-  <script src="vendor/xterm/xterm-addon-fit.js"></script>
+  <script src="vendor/v86/libv86.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
