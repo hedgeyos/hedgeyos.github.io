@@ -398,6 +398,7 @@
       display: grid;
       grid-template-rows: 24px 1fr;
       z-index: 20;
+      overflow: hidden;
     }
 
     .window.inactive .titlebar{
@@ -908,6 +909,7 @@
       display: grid;
       grid-template-columns: 220px 1fr;
       min-width: 0;
+      min-height: 0;
     }
 
     .sidebar{
@@ -917,6 +919,7 @@
       border-right: 1px solid var(--os-shadow);
       background: var(--os-face);
       min-width: 0;
+      min-height: 0;
     }
     .section-title{
       padding: 8px 10px;
@@ -955,6 +958,7 @@
       grid-template-rows: auto 1fr auto;
       background: var(--os-face);
       min-width: 0;
+      min-height: 0;
     }
 
     .toolbar{
@@ -991,6 +995,7 @@
       overflow: auto;
       background: var(--os-face2);
       min-width: 0;
+      min-height: 0;
     }
 
     table.list{
