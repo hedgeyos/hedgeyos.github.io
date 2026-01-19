@@ -430,7 +430,7 @@
       border-radius: 0;
       background: #ffffff;
       border: 1px solid #000;
-      box-shadow: inset 0 1px 0 #000, inset 0 -1px 0 #000;
+      box-shadow: none;
     }
     body.system7 .title > span{
       background: #ffffff;
@@ -442,6 +442,33 @@
     body.system7 .window.inactive .titlebar{
       background: #ffffff;
       filter: none;
+    }
+    body.system7 .bevel-out,
+    body.system7 .bevel-out.thick,
+    body.system7 .bevel-in{
+      background: #ffffff;
+      border: 1px solid #000;
+      box-shadow: none;
+    }
+    body.system7 .bevel-out.thick,
+    body.system7 .bevel-in{
+      border-width: 1px;
+    }
+    body.system7 .hairline{
+      outline: none;
+    }
+    body.system7 .os9-box,
+    body.system7 .btn,
+    body.system7 .field,
+    body.system7 .ro,
+    body.system7 .swatch{
+      box-shadow: none;
+      border: 1px solid #000;
+      background: #ffffff;
+    }
+    body.system7 .menu.open{
+      background: #000;
+      color: #fff;
     }
     body.beos .window{
       display: flex;
