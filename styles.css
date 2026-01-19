@@ -403,6 +403,20 @@
         0 1px 0 rgba(255,255,255,0.4);
       grid-template-columns: max-content max-content max-content;
     }
+    body.beos .window{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    body.beos .window > .window-body,
+    body.beos .window > .appwrap,
+    body.beos .window > .browserwrap,
+    body.beos .window > .noteswrap,
+    body.beos .window > .themeswrap{
+      align-self: stretch;
+      width: 100%;
+      flex: 1 1 auto;
+    }
     body.beos .window.bevel-out{
       background: transparent;
     }
