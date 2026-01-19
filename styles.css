@@ -422,10 +422,18 @@
     }
     body.beos .window.bevel-out,
     body.beos .window.bevel-out.thick{
-      border-top: 0;
+      border: 0;
     }
     body.beos .window.hairline{
       outline: none;
+    }
+    body.beos .window > .window-body,
+    body.beos .window > .appwrap,
+    body.beos .window > .browserwrap,
+    body.beos .window > .noteswrap,
+    body.beos .window > .themeswrap{
+      border: 1px solid var(--os-shadow);
+      border-top: 0;
     }
     body.dark .title:before,
     body.dark .title:after{
