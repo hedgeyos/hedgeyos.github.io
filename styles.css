@@ -81,6 +81,29 @@
       --inactive-bot: #c9c9c9;
     }
 
+    body.system7{
+      --os-bg: #bdbdbd;
+      --os-face: #d9d9d9;
+      --os-face2: #efefef;
+      --os-shadow: #7a7a7a;
+      --os-dark: #202020;
+      --os-white: #ffffff;
+      --os-black: #000000;
+      --os-blue: #3b6bb0;
+
+      --menubar-top: #f0f0f0;
+      --menubar-bot: #d8d8d8;
+
+      --titlebar-top: #e0e0e0;
+      --titlebar-bot: #cfcfcf;
+
+      --chrome-top: #e0e0e0;
+      --chrome-bot: #cfcfcf;
+
+      --inactive-top: #d9d9d9;
+      --inactive-bot: #c8c8c8;
+    }
+
     @font-face{
       font-family: "ChicagoKare";
       src: url("fonts/ChicagoKare-Regular.woff2") format("woff2");
@@ -402,6 +425,12 @@
         inset 0 0 0 1px rgba(0,0,0,0.2),
         0 1px 0 rgba(255,255,255,0.4);
       grid-template-columns: max-content max-content max-content;
+    }
+    body.system7 .titlebar{
+      border-radius: 0;
+    }
+    body.system7 .title > span{
+      background: linear-gradient(var(--titlebar-top), var(--titlebar-bot));
     }
     body.beos .window{
       display: flex;

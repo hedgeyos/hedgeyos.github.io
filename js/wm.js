@@ -460,6 +460,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         label: "OS 9 Classic",
         desc: "Classic HedgeyOS chrome with Mac OS 9-inspired greys.",
       },
+      system7: {
+        label: "System Software 7",
+        desc: "Early Macintosh look with tighter chrome and lighter greys.",
+      },
       beos: {
         label: "BeOS",
         desc: "Warm BeOS yellow title bars and a brighter, punchier contrast.",
