@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HedgeyOS</title>
+  <script src="coi-serviceworker.js"></script>
   <link rel="stylesheet" href="vendor/xterm/xterm.css" />
 
   <link rel="stylesheet" href="styles.css" />
@@ -298,13 +299,6 @@
 
   <script src="vendor/xterm/xterm.js"></script>
   <script src="vendor/xterm/xterm-addon-fit.js"></script>
-  <script src="vendor/wasmer/wasm-transformer.iife.js"></script>
-  <script>
-    window._hedgeyWasmTransformerReady = window.WasmTransformer
-      ? window.WasmTransformer.wasmTransformerInit("vendor/wasmer/wasm-transformer.wasm")
-      : Promise.resolve();
-  </script>
-  <script src="vendor/wasmer/wasm-terminal.iife.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

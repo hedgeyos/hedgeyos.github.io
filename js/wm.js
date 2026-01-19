@@ -453,37 +453,73 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const host = win.querySelector("[data-terminal]");
     if (!host) return;
 
-    const WasmTerminalCtor = window.WasmTerminal?.default || window.WasmTerminal;
-    const fetchCommandFromWAPM = window.WasmTerminal?.fetchCommandFromWAPM;
-    if (!WasmTerminalCtor || !fetchCommandFromWAPM){
-      host.textContent = "WASM terminal engine not available.";
-      return;
-    }
-
     (async () => {
-      if (window._hedgeyWasmTransformerReady) {
-        try{
-          await window._hedgeyWasmTransformerReady;
-        } catch {
-          // Ignore transformer failures; some commands still run without it.
-        }
+      const TerminalCtor = window.Terminal;
+      if (!TerminalCtor){
+        host.textContent = "Terminal engine not available.";
+        return;
       }
 
-      const lowerI64Imports = window.WasmTransformer?.lowerI64Imports;
-      const wasmTerminal = new WasmTerminalCtor({
-        processWorkerUrl: "vendor/wasmer/process.worker.js",
-        fetchCommand: async ({ args, env }) => {
-          const binary = await fetchCommandFromWAPM({ args, env });
-          return lowerI64Imports ? lowerI64Imports(binary) : binary;
-        },
+      const term = new TerminalCtor({ cursorBlink: true, convertEol: true });
+      const fitAddon = window.FitAddon?.FitAddon ? new window.FitAddon.FitAddon() : null;
+      if (fitAddon) term.loadAddon(fitAddon);
+
+      term.open(host);
+      if (fitAddon) fitAddon.fit();
+      term.writeln("Starting Wasmer shell...");
+
+      let WasmerSDK = null;
+      try{
+        WasmerSDK = await import("https://unpkg.com/@wasmer/sdk@0.10.0/dist/index.mjs");
+      } catch (err){
+        term.writeln("Failed to load Wasmer SDK.");
+        term.writeln(String(err));
+        return;
+      }
+
+      const { init, Wasmer, Directory } = WasmerSDK;
+      const wasmUrl = new URL("https://unpkg.com/@wasmer/sdk@0.10.0/dist/wasmer_js_bg.wasm");
+      const workerUrl = "https://unpkg.com/@wasmer/sdk@0.10.0/dist/index.mjs";
+
+      try{
+        await init({ module: wasmUrl, workerUrl });
+      } catch (err){
+        term.writeln("Failed to initialize Wasmer runtime.");
+        term.writeln(String(err));
+        return;
+      }
+
+      const home = new Directory();
+      await home.writeFile("README.txt", "Welcome to HedgeyOS shell.\n");
+
+      let pkg;
+      try{
+        pkg = await Wasmer.fromRegistry("sharrattj/bash");
+      } catch (err){
+        term.writeln("Failed to fetch shell package.");
+        term.writeln(String(err));
+        return;
+      }
+
+      term.reset();
+      term.writeln("HedgeyOS WebAssembly Shell");
+
+      const instance = await pkg.entrypoint.run({
+        args: [],
+        mount: { "/home": home },
+        cwd: "/home",
       });
 
-      wasmTerminal.open(host);
-      wasmTerminal.fit?.();
-      wasmTerminal.focus?.();
-      wasmTerminal.print?.("HedgeyOS WebAssembly Shell\n");
+      const encoder = new TextEncoder();
+      const stdin = instance.stdin?.getWriter();
+      term.onData((data) => stdin?.write(encoder.encode(data)));
 
-      const ro = new ResizeObserver(() => wasmTerminal.fit?.());
+      instance.stdout?.pipeTo(new WritableStream({ write: (chunk) => term.write(chunk) }));
+      instance.stderr?.pipeTo(new WritableStream({ write: (chunk) => term.write(chunk) }));
+
+      const ro = new ResizeObserver(() => {
+        if (fitAddon) fitAddon.fit();
+      });
       ro.observe(host);
     })();
   }
