@@ -3,9 +3,9 @@
 Mac OS 9-inspired desktop experiment for the web.
 
 ## What's here
-- Single-page source in `index.html` with inline CSS that defines the OS 9 chrome (menu bar, beveled controls, title bars, Finder-style panes, modal scaffolding, and app/notes/browser window shells).
+- Layout in `index.html`, styling in `styles.css`, and JS split across modules in `js/` (desktop UI, window manager, menus, storage, and boot).
 - Light/dark palette variables and responsive tweaks aimed at tablet and phone widths.
-- No HTML body or JS is present yet; the current snapshot is styling only and the responsive block at the bottom of `index.html` is still unfinished.
+- The fonts reference `fonts/ChicagoKare-Regular.woff2` for the OS 9 vibe.
 
 ## Run locally
 - Open `index.html` directly in a browser, or serve the folder with `python3 -m http.server 8000` and visit `http://localhost:8000`.
