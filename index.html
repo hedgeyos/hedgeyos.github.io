@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HedgeyOS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.5.0/css/xterm.css" />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -32,6 +33,7 @@
     <div class="menu" data-menu="apps" id="appsMenu">
       <span class="menu-label">Apps</span>
       <div class="menu-dropdown bevel-out hairline" id="appsDropdown">
+        <div class="menu-item" data-app="localTerminal">Terminal</div>
         <div class="menu-item" data-app="files">Files</div>
         <div class="menu-item" data-app="browser">Browser</div>
         <div class="menu-item" data-app="notes">Notes</div>
@@ -235,6 +237,27 @@
     </div>
   </template>
 
+  <template id="terminalTemplate">
+    <div class="window bevel-out thick hairline" data-win>
+      <div class="titlebar bevel-out hairline" data-titlebar>
+        <div class="controls">
+          <div class="os9-box" title="Close" data-close></div>
+          <div class="os9-box" title="Minimize" data-minimize></div>
+        </div>
+        <div class="title"><span data-titletext>Terminal</span></div>
+        <div class="right">
+          <div class="os9-box" title="Zoom" data-zoom></div>
+        </div>
+      </div>
+
+      <div class="terminalwrap">
+        <div class="terminalhost" data-terminal></div>
+      </div>
+
+      <div class="resize-grip" data-grip title="Resize"></div>
+    </div>
+  </template>
+
   <template id="themesTemplate">
     <div class="window bevel-out thick hairline" data-win>
       <div class="titlebar bevel-out hairline" data-titlebar>
@@ -273,6 +296,8 @@
     </div>
   </template>
 
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.5.0/lib/xterm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

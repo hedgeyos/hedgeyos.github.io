@@ -69,7 +69,9 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
       wm.createNotesWindow();
     }
 
-    if (app === "files"){
+    if (app === "localTerminal"){
+      wm.createTerminalWindow();
+    } else if (app === "files"){
       wm.createFilesWindow();
     } else if (app === "browser"){
       wm.createBrowserWindow();

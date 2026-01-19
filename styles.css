@@ -1119,6 +1119,22 @@
       outline: none;
     }
 
+    /* ===== Terminal ===== */
+    .terminalwrap{
+      height: 100%;
+      background: var(--os-face2);
+      display: grid;
+      grid-template-rows: 1fr;
+      min-height: 0;
+    }
+    .terminalhost{
+      width: 100%;
+      height: 100%;
+      padding: 6px;
+      box-sizing: border-box;
+      background: var(--os-face2);
+    }
+
     /* ===== Dialog ===== */
     .modal{
       position: fixed;

@@ -3,7 +3,7 @@ import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, theme }){
-  const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
+  const { finderTpl, appTpl, browserTpl, notesTpl, terminalTpl, themesTpl } = templates;
   const DesktopIcons = createDesktopIcons({ iconLayer, desktop });
 
   let zTop = 20;
@@ -449,6 +449,62 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     setTimeout(() => ta.focus(), 0);
   }
 
+  function wireTerminalUI(win){
+    const host = win.querySelector("[data-terminal]");
+    if (!host) return;
+
+    const TerminalCtor = window.Terminal;
+    if (!TerminalCtor){
+      host.textContent = "Terminal engine not available.";
+      return;
+    }
+
+    const term = new TerminalCtor({
+      cursorBlink: true,
+      fontFamily: "\"ChicagoKare\", monospace",
+      fontSize: 12,
+      theme: {
+        background: "transparent",
+      },
+    });
+
+    let fitAddon = null;
+    if (window.FitAddon && window.FitAddon.FitAddon){
+      fitAddon = new window.FitAddon.FitAddon();
+      term.loadAddon(fitAddon);
+    }
+
+    term.open(host);
+    if (fitAddon) fitAddon.fit();
+
+    term.writeln("HedgeyOS Terminal");
+    term.write("> ");
+
+    let buffer = "";
+    term.onData((data) => {
+      if (data === "\r"){
+        term.write("\r\n");
+        buffer = "";
+        term.write("> ");
+        return;
+      }
+      if (data === "\u007f"){
+        if (buffer.length > 0){
+          buffer = buffer.slice(0, -1);
+          term.write("\b \b");
+        }
+        return;
+      }
+      buffer += data;
+      term.write(data);
+    });
+
+    const ro = new ResizeObserver(() => {
+      if (fitAddon) fitAddon.fit();
+    });
+    ro.observe(host);
+  }
+
   function wireThemesUI(win){
     const list = win.querySelector("[data-themes-list]");
     const items = Array.from(list.querySelectorAll("[data-theme]"));
@@ -542,6 +598,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     if (tpl === appTpl) wireAppUI(win, extra?.url || "about:blank");
     if (tpl === browserTpl) wireBrowserUI(win);
     if (tpl === notesTpl) wireNotesUI(win, extra?.notesOpts || null);
+    if (tpl === terminalTpl) wireTerminalUI(win);
     if (tpl === themesTpl) wireThemesUI(win);
 
     st.title = getTitle(win);
@@ -568,6 +625,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     return spawn(notesTpl, "Notes", { kind: "notes", notesOpts: notesOpts || null });
   }
 
+  function createTerminalWindow(){
+    return spawn(terminalTpl, "Terminal", { kind: "app" });
+  }
+
   function createThemesWindow(){
     return spawn(themesTpl, "Themes", { kind: "app" });
   }
@@ -581,6 +642,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     createFilesWindow,
     createBrowserWindow,
     createNotesWindow,
+    createTerminalWindow,
     createAppWindow,
     createThemesWindow,
     refreshOpenWindowsMenu,
