@@ -704,9 +704,10 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       width: 30px;
-      height: calc(100% - 16px);
+      height: fit-content;
+      max-height: calc(100% - 16px);
       margin: 8px 0 8px 8px;
       border-radius: 0;
     }
