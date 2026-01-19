@@ -104,6 +104,29 @@
       --inactive-bot: #ffffff;
     }
 
+    body.greenscreen{
+      --os-bg: #000000;
+      --os-face: #000000;
+      --os-face2: #000000;
+      --os-shadow: #00ff66;
+      --os-dark: #00ff66;
+      --os-white: #00ff66;
+      --os-black: #00ff66;
+      --os-blue: #00ff66;
+
+      --menubar-top: #000000;
+      --menubar-bot: #000000;
+
+      --titlebar-top: #000000;
+      --titlebar-bot: #000000;
+
+      --chrome-top: #000000;
+      --chrome-bot: #000000;
+
+      --inactive-top: #000000;
+      --inactive-bot: #000000;
+    }
+
     @font-face{
       font-family: "ChicagoKare";
       src: url("fonts/ChicagoKare-Regular.woff2") format("woff2");
@@ -483,6 +506,78 @@
     body.system7 .menu.open{
       background: #000;
       color: #fff;
+    }
+
+    body.greenscreen,
+    body.greenscreen *{
+      color: #00ff66;
+    }
+    body.greenscreen .bevel-out,
+    body.greenscreen .bevel-out.thick,
+    body.greenscreen .bevel-in{
+      background: #000000;
+      border: 1px solid #00ff66;
+      box-shadow: none;
+    }
+    body.greenscreen .bevel-out.thick,
+    body.greenscreen .bevel-in{
+      border-width: 1px;
+    }
+    body.greenscreen .hairline{
+      outline: none;
+    }
+    body.greenscreen .os9-box,
+    body.greenscreen .btn,
+    body.greenscreen .field,
+    body.greenscreen .ro,
+    body.greenscreen .swatch,
+    body.greenscreen .menu,
+    body.greenscreen .menu-dropdown,
+    body.greenscreen .menu-item{
+      box-shadow: none;
+      border: 1px solid #00ff66;
+      background: #000000;
+      color: #00ff66;
+    }
+    body.greenscreen .menu.open{
+      background: #00ff66;
+      color: #000000;
+    }
+    body.greenscreen .menu-item:hover{
+      background: #00ff66;
+      color: #000000;
+    }
+    body.greenscreen .titlebar{
+      background: #00ff66;
+      border: 1px solid #00ff66;
+      box-shadow: none;
+    }
+    body.greenscreen .title > span{
+      background: transparent;
+      color: #000000;
+      font-weight: 700;
+    }
+    body.greenscreen .window.inactive .titlebar{
+      background: #000000;
+      border: 1px solid #00ff66;
+    }
+    body.greenscreen .window.inactive .title > span{
+      color: #00ff66;
+    }
+    body.greenscreen .title:before,
+    body.greenscreen .title:after{
+      display: none;
+    }
+    body.greenscreen .menu-dropdown{
+      background: #000000;
+    }
+    body.greenscreen table.list thead th,
+    body.greenscreen .statusbar,
+    body.greenscreen .toolbar,
+    body.greenscreen .browserbar,
+    body.greenscreen .notesbar{
+      background: #000000;
+      border-color: #00ff66;
     }
     body.beos .window{
       display: flex;

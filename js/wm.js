@@ -464,6 +464,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         label: "System Software 7",
         desc: "Early Macintosh look with tighter chrome and lighter greys.",
       },
+      greenscreen: {
+        label: "Greenscreen",
+        desc: "Flat black-and-green CRT terminal vibe with glowing accents.",
+      },
       beos: {
         label: "BeOS",
         desc: "Warm BeOS yellow title bars and a brighter, punchier contrast.",
