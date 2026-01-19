@@ -298,6 +298,13 @@
 
   <script src="vendor/xterm/xterm.js"></script>
   <script src="vendor/xterm/xterm-addon-fit.js"></script>
+  <script src="vendor/wasmer/wasm-transformer.iife.js"></script>
+  <script>
+    window._hedgeyWasmTransformerReady = window.WasmTransformer
+      ? window.WasmTransformer.wasmTransformerInit("vendor/wasmer/wasm-transformer.wasm")
+      : Promise.resolve();
+  </script>
+  <script src="vendor/wasmer/wasm-terminal.iife.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

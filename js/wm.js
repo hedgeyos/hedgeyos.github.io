@@ -453,56 +453,39 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const host = win.querySelector("[data-terminal]");
     if (!host) return;
 
-    const TerminalCtor = window.Terminal;
-    if (!TerminalCtor){
-      host.textContent = "Terminal engine not available.";
+    const WasmTerminalCtor = window.WasmTerminal?.default || window.WasmTerminal;
+    const fetchCommandFromWAPM = window.WasmTerminal?.fetchCommandFromWAPM;
+    if (!WasmTerminalCtor || !fetchCommandFromWAPM){
+      host.textContent = "WASM terminal engine not available.";
       return;
     }
 
-    const term = new TerminalCtor({
-      cursorBlink: true,
-      fontFamily: "\"ChicagoKare\", monospace",
-      fontSize: 12,
-      theme: {
-        background: "transparent",
-      },
-    });
-
-    let fitAddon = null;
-    if (window.FitAddon && window.FitAddon.FitAddon){
-      fitAddon = new window.FitAddon.FitAddon();
-      term.loadAddon(fitAddon);
-    }
-
-    term.open(host);
-    if (fitAddon) fitAddon.fit();
-
-    term.writeln("HedgeyOS Terminal");
-    term.write("> ");
-
-    let buffer = "";
-    term.onData((data) => {
-      if (data === "\r"){
-        term.write("\r\n");
-        buffer = "";
-        term.write("> ");
-        return;
-      }
-      if (data === "\u007f"){
-        if (buffer.length > 0){
-          buffer = buffer.slice(0, -1);
-          term.write("\b \b");
+    (async () => {
+      if (window._hedgeyWasmTransformerReady) {
+        try{
+          await window._hedgeyWasmTransformerReady;
+        } catch {
+          // Ignore transformer failures; some commands still run without it.
         }
-        return;
       }
-      buffer += data;
-      term.write(data);
-    });
 
-    const ro = new ResizeObserver(() => {
-      if (fitAddon) fitAddon.fit();
-    });
-    ro.observe(host);
+      const lowerI64Imports = window.WasmTransformer?.lowerI64Imports;
+      const wasmTerminal = new WasmTerminalCtor({
+        processWorkerUrl: "vendor/wasmer/process.worker.js",
+        fetchCommand: async ({ args, env }) => {
+          const binary = await fetchCommandFromWAPM({ args, env });
+          return lowerI64Imports ? lowerI64Imports(binary) : binary;
+        },
+      });
+
+      wasmTerminal.open(host);
+      wasmTerminal.fit?.();
+      wasmTerminal.focus?.();
+      wasmTerminal.print?.("HedgeyOS WebAssembly Shell\n");
+
+      const ro = new ResizeObserver(() => wasmTerminal.fit?.());
+      ro.observe(host);
+    })();
   }
 
   function wireThemesUI(win){
