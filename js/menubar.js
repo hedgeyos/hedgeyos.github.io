@@ -52,6 +52,10 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps }){
       requestFullScreen();
     }
 
+    if (action === "openThemes"){
+      wm.createThemesWindow();
+    }
+
     if (action === "aboutSystem"){
       wm.createAppWindow("About", defaultApps.about.url);
     }

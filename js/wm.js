@@ -2,8 +2,8 @@ import { toEmbedUrl } from "./embedify.js";
 import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
 
-export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu }){
-  const { finderTpl, appTpl, browserTpl, notesTpl } = templates;
+export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, theme }){
+  const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
   const DesktopIcons = createDesktopIcons({ iconLayer, desktop });
 
   let zTop = 20;
@@ -449,6 +449,40 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     setTimeout(() => ta.focus(), 0);
   }
 
+  function wireThemesUI(win){
+    const list = win.querySelector("[data-themes-list]");
+    const items = Array.from(list.querySelectorAll("[data-theme]"));
+    const title = win.querySelector("[data-theme-title]");
+    const desc = win.querySelector("[data-theme-desc]");
+
+    const meta = {
+      hedgey: {
+        label: "HedgeyOS",
+        desc: "Classic HedgeyOS chrome with Mac OS 9-inspired greys.",
+      },
+      beos: {
+        label: "BeOS",
+        desc: "Warm BeOS yellow title bars and a brighter, punchier contrast.",
+      },
+    };
+
+    function applySelection(name){
+      theme.applyTheme(name);
+      items.forEach(item => {
+        item.classList.toggle("active", item.dataset.theme === name);
+      });
+      const info = meta[name] || meta.hedgey;
+      if (title) title.textContent = info.label;
+      if (desc) desc.textContent = info.desc;
+    }
+
+    items.forEach(item => {
+      item.addEventListener("click", () => applySelection(item.dataset.theme));
+    });
+
+    applySelection(theme.getTheme());
+  }
+
   function spawn(tpl, title, extra){
     const id = "w" + (idSeq++);
     const frag = tpl.content.cloneNode(true);
@@ -496,6 +530,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     if (tpl === appTpl) wireAppUI(win, extra?.url || "about:blank");
     if (tpl === browserTpl) wireBrowserUI(win);
     if (tpl === notesTpl) wireNotesUI(win, extra?.notesOpts || null);
+    if (tpl === themesTpl) wireThemesUI(win);
 
     st.title = getTitle(win);
     focus(id);
@@ -521,6 +556,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     return spawn(notesTpl, "Notes", { kind: "notes", notesOpts: notesOpts || null });
   }
 
+  function createThemesWindow(){
+    return spawn(themesTpl, "Themes", { kind: "app" });
+  }
+
   window.addEventListener("resize", () => {
     refreshIcons();
     refreshOpenWindowsMenu();
@@ -531,6 +570,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     createBrowserWindow,
     createNotesWindow,
     createAppWindow,
+    createThemesWindow,
     refreshOpenWindowsMenu,
     refreshIcons,
     focus,

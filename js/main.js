@@ -3,7 +3,7 @@ import { createSaveDialog } from "./save-dialog.js";
 import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
 import { initMenuDropdowns, initMenuActions } from "./menubar.js";
-import { initThemeToggle } from "./theme.js";
+import { initThemeToggle, initThemeState, applyTheme, getTheme } from "./theme.js";
 
 const menubar = document.getElementById("menubar");
 const desktop = document.getElementById("desktop");
@@ -31,15 +31,18 @@ const wm = createWindowManager({
     appTpl: document.getElementById("appTemplate"),
     browserTpl: document.getElementById("browserTemplate"),
     notesTpl: document.getElementById("notesTemplate"),
+    themesTpl: document.getElementById("themesTemplate"),
   },
   openWindowsList,
   saveDialog,
   appsMenu,
+  theme: { applyTheme, getTheme },
 });
 
 initMenuDropdowns({ menubar });
 initMenuActions({ menubar, wm, appsMenu, defaultApps: DEFAULT_APPS });
 initThemeToggle({ button: document.getElementById("modebtn") });
+initThemeState();
 
 const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
 wm.createFilesWindow();
