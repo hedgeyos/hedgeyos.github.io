@@ -82,26 +82,26 @@
     }
 
     body.system7{
-      --os-bg: #bdbdbd;
-      --os-face: #d9d9d9;
-      --os-face2: #efefef;
-      --os-shadow: #7a7a7a;
-      --os-dark: #202020;
+      --os-bg: #bcbcbc;
+      --os-face: #ffffff;
+      --os-face2: #ffffff;
+      --os-shadow: #000000;
+      --os-dark: #000000;
       --os-white: #ffffff;
       --os-black: #000000;
-      --os-blue: #3b6bb0;
+      --os-blue: #000000;
 
       --menubar-top: #f0f0f0;
-      --menubar-bot: #d8d8d8;
+      --menubar-bot: #f0f0f0;
 
-      --titlebar-top: #e0e0e0;
-      --titlebar-bot: #cfcfcf;
+      --titlebar-top: #ffffff;
+      --titlebar-bot: #ffffff;
 
-      --chrome-top: #e0e0e0;
-      --chrome-bot: #cfcfcf;
+      --chrome-top: #ffffff;
+      --chrome-bot: #ffffff;
 
-      --inactive-top: #d9d9d9;
-      --inactive-bot: #c8c8c8;
+      --inactive-top: #ffffff;
+      --inactive-bot: #ffffff;
     }
 
     @font-face{
@@ -428,9 +428,20 @@
     }
     body.system7 .titlebar{
       border-radius: 0;
+      background: #ffffff;
+      border: 1px solid #000;
+      box-shadow: inset 0 1px 0 #000, inset 0 -1px 0 #000;
     }
     body.system7 .title > span{
-      background: linear-gradient(var(--titlebar-top), var(--titlebar-bot));
+      background: #ffffff;
+    }
+    body.system7 .title:before,
+    body.system7 .title:after{
+      display: none;
+    }
+    body.system7 .window.inactive .titlebar{
+      background: #ffffff;
+      filter: none;
     }
     body.beos .window{
       display: flex;
