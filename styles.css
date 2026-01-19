@@ -391,8 +391,11 @@
       letter-spacing: 0.2px;
     }
     body.beos .titlebar{
-      width: calc(100% - 84px);
-      margin: 4px 18px 0 10px;
+      display: inline-grid;
+      width: fit-content;
+      max-width: calc(100% - 24px);
+      justify-self: start;
+      margin: 4px 12px 0 10px;
       border-radius: 7px 7px 0 0;
       box-shadow:
         inset 0 0 0 1px rgba(0,0,0,0.2),
