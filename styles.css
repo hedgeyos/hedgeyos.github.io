@@ -286,6 +286,12 @@
       user-select: none;
       color: var(--os-black);
     }
+    .hudbtn{
+      display: none;
+    }
+    body.hud-on .hudbtn{
+      display: inline-flex;
+    }
     .modebtn:active{
       border-top: 1px solid var(--os-shadow);
       border-left: 1px solid var(--os-shadow);
@@ -629,7 +635,7 @@
     body.cyberpunk .bevel-out,
     body.cyberpunk .bevel-out.thick,
     body.cyberpunk .bevel-in{
-      background: #000000;
+      background: rgba(0,0,0,0.5);
       border: 1px solid #ff3b30;
       box-shadow: none;
     }
@@ -650,7 +656,7 @@
     body.cyberpunk .menu-item{
       box-shadow: none;
       border: 1px solid #ff3b30;
-      background: #000000;
+      background: rgba(0,0,0,0.5);
       color: #ff3b30;
     }
     body.cyberpunk .menu.open{
@@ -683,14 +689,14 @@
       display: none;
     }
     body.cyberpunk .menu-dropdown{
-      background: #000000;
+      background: rgba(0,0,0,0.5);
     }
     body.cyberpunk table.list thead th,
     body.cyberpunk .statusbar,
     body.cyberpunk .toolbar,
     body.cyberpunk .browserbar,
     body.cyberpunk .notesbar{
-      background: #000000;
+      background: rgba(0,0,0,0.5);
       border-color: #ff3b30;
     }
 
@@ -719,6 +725,7 @@
       flex: 1 1 auto;
       border: 1px solid #ff3b30;
       border-top: 0;
+      background: rgba(0,0,0,0.5);
     }
     body.cyberpunk .window.bevel-out,
     body.cyberpunk .window.bevel-out.thick{

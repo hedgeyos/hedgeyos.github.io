@@ -43,6 +43,7 @@ const wm = createWindowManager({
 const hud = createHud({
   video: document.getElementById("hudFeed"),
   body: document.body,
+  switchButton: document.getElementById("hudSwitch"),
 });
 
 initMenuDropdowns({ menubar });
