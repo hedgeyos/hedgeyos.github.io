@@ -574,7 +574,7 @@
       height: 100%;
       background: var(--os-face2);
       display: grid;
-      grid-template-rows: auto 1fr;
+      grid-template-rows: auto 1fr auto;
       min-height: 0;
     }
     .browserbar{
@@ -924,6 +924,10 @@
           <button class="btn" data-save>Save</button>
         </div>
         <iframe class="appframe" data-iframe src="about:blank"></iframe>
+        <div class="statusbar">
+          <span data-browser-status>Ready.</span>
+          <span>Browser</span>
+        </div>
       </div>
 
       <div class="resize-grip" data-grip title="Resize"></div>
@@ -959,7 +963,9 @@
     </div>
   </template>
 
-  <script>
+  <script type="module">
+    import { toEmbedUrl } from "./embedify.js";
+
     // ===== Menu bar behavior =====
     (function(){
       const menubar = document.getElementById("menubar");
@@ -1589,13 +1595,35 @@
         const goBtn = win.querySelector("[data-go]");
         const saveBtn = win.querySelector("[data-save]");
         const iframe = win.querySelector("[data-iframe]");
+        const status = win.querySelector("[data-browser-status]");
+
+        function setStatus(txt){
+          if (status) status.textContent = txt;
+        }
 
         function setUrl(u){
-          const url = (u || "").trim();
-          if (!url) return;
-          const norm = /^https?:\/\//i.test(url) ? url : ("https://" + url);
-          field.value = norm;
-          iframe.src = norm;
+          const raw = (u || "").trim();
+          if (!raw){
+            setStatus("Enter a URL");
+            return;
+          }
+
+          // Try to convert to an embed URL; fall back to the normalized input.
+          const conv = toEmbedUrl(raw, { twitchParent: location.hostname || "localhost" });
+          if (conv.ok){
+            field.value = raw;
+            iframe.src = conv.embedUrl;
+            setStatus("Embedded via " + conv.provider);
+          } else {
+            const norm = /^https?:\/\//i.test(raw) ? raw : ("https://" + raw);
+            field.value = norm;
+            iframe.src = norm;
+            if (conv.reason === "twitch_requires_parent"){
+              setStatus("Twitch needs a parent domain; opened raw URL");
+            } else {
+              setStatus("Opened direct URL (no embed)");
+            }
+          }
         }
 
         goBtn.addEventListener("click", () => setUrl(field.value));
