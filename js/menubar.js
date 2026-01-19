@@ -34,7 +34,7 @@ async function requestFullScreen(){
   }
 }
 
-export function initMenuActions({ menubar, wm, appsMenu, defaultApps }){
+export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
   menubar.addEventListener("click", (e) => {
     const action = e.target.getAttribute("data-action");
     const app = e.target.getAttribute("data-app");
@@ -50,6 +50,9 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps }){
 
     if (action === "fullScreen"){
       requestFullScreen();
+    }
+    if (action === "toggleHud" && hud){
+      hud.toggle();
     }
 
     if (action === "openThemes"){

@@ -4,6 +4,7 @@ import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
 import { initMenuDropdowns, initMenuActions } from "./menubar.js";
 import { initThemeToggle, initThemeState, applyTheme, getTheme } from "./theme.js";
+import { createHud } from "./hud.js";
 
 const menubar = document.getElementById("menubar");
 const desktop = document.getElementById("desktop");
@@ -39,8 +40,13 @@ const wm = createWindowManager({
   theme: { applyTheme, getTheme },
 });
 
+const hud = createHud({
+  video: document.getElementById("hudFeed"),
+  body: document.body,
+});
+
 initMenuDropdowns({ menubar });
-initMenuActions({ menubar, wm, appsMenu, defaultApps: DEFAULT_APPS });
+initMenuActions({ menubar, wm, appsMenu, defaultApps: DEFAULT_APPS, hud });
 initThemeToggle({ button: document.getElementById("modebtn") });
 initThemeState();
 

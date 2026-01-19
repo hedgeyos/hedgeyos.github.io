@@ -304,6 +304,25 @@
       box-sizing: border-box;
       overflow: hidden;
       touch-action: none;
+      z-index: 2;
+    }
+    .hud-feed{
+      position: fixed;
+      inset: var(--menubar-h) 0 0 0;
+      width: 100%;
+      height: calc(100% - var(--menubar-h));
+      object-fit: cover;
+      display: none;
+      z-index: 1;
+      background: #000;
+      pointer-events: none;
+    }
+    body.hud-on .hud-feed{
+      display: block;
+    }
+    body.hud-on .desktop{
+      background: transparent;
+      z-index: 2;
     }
 
     /* icon layer is behind windows */

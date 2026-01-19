@@ -14,6 +14,7 @@
       <span class="menu-label">🦔</span>
       <div class="menu-dropdown bevel-out hairline">
         <div class="menu-item" data-action="fullScreen">Full Screen</div>
+        <div class="menu-item" data-action="toggleHud">HUD</div>
         <div class="menu-item" data-action="openThemes">Themes</div>
         <div class="menu-sep"></div>
         <div class="menu-item" data-action="aboutSystem">About HedgeyOS</div>
@@ -64,6 +65,8 @@
     <div class="menubar-spacer"></div>
     <button class="modebtn" id="modebtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
   </div>
+
+  <video id="hudFeed" class="hud-feed" autoplay muted playsinline></video>
 
   <div class="desktop" id="desktop">
     <div class="icon-layer" id="iconLayer"></div>
