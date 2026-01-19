@@ -447,6 +447,7 @@
           #fff 2px
         );
       opacity: 1;
+      height: 8px;
     }
     body.system7 .window.inactive .titlebar{
       background: #ffffff;
