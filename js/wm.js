@@ -457,7 +457,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
     const meta = {
       hedgey: {
-        label: "HedgeyOS",
+        label: "OS 9 Classic",
         desc: "Classic HedgeyOS chrome with Mac OS 9-inspired greys.",
       },
       beos: {
