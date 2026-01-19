@@ -1,6 +1,7 @@
 import { toEmbedUrl } from "./embedify.js";
-import { NOTES_KEY } from "./constants.js";
+import { DEFAULT_APPS, NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
+import { loadSavedApps } from "./storage.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, terminalTpl, themesTpl } = templates;
@@ -265,44 +266,14 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     grip.addEventListener("pointercancel", () => resizing = false);
   }
 
-  function randChoice(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
-
-  function buildFinderRows(tbody){
-    const fakeNames = [
-      "Hedgehog", "Pig", "Boarbarian", "Flipside", "Lina",
-      "Decentricity", "Ms. Pandu Sastrowardoyo", "inversebrah",
-      "Danceu", "Fren", "HedgeyTown", "Chordynaut", "Unconnected",
-      "SufferMon", "GunDB", "Pandan Studios", "myriad.social",
-      "debio.ai", "blocksphere", "hedgey.sock", "kernel_hedgehog",
-      "probably_not_a_virus", "definitely_a_virus", "tiny_psa.txt"
-    ];
-
-    const kinds = ["folder", "document", "alias", "mystery", "aesthetic artifact"];
-    const dates = [
-      "Yesterday, 9:09 AM",
-      "Thu, May 1, 2003, 11:49 PM",
-      "Mon, Jul 14, 2003, 12:24 PM",
-      "Wed, Jun 11, 2003, 9:08 AM",
-      "Fri, Jul 11, 2003, 12:28 PM",
-      "Just now",
-      "Back in the Before Times"
-    ];
-    const sizes = ["--", "4 K", "42 K", "692 K", "3.5 MB", "13.37 MB", "∞"];
-
-    const rows = [];
-    for (let i = 0; i < 18; i++){
-      rows.push({
-        name: fakeNames[i] || ("mystery_" + (i+1)),
-        date: randChoice(dates),
-        size: randChoice(sizes),
-        kind: randChoice(kinds),
-      });
-    }
-
+  function buildFinderRows(tbody, rows){
     tbody.innerHTML = "";
     rows.forEach((r, idx) => {
       const tr = document.createElement("tr");
       tr.className = "row" + (idx === 0 ? " selected" : "");
+      if (r.open) tr.dataset.open = r.open;
+      if (r.url) tr.dataset.url = r.url;
+      if (r.title) tr.dataset.title = r.title;
       tr.innerHTML = `
         <td>${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.date)}</td>
@@ -324,14 +295,60 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const list = win.querySelector("[data-list]");
     const status = win.querySelector("[data-status]");
     const tbody = win.querySelector("[data-finder-rows]");
+    const navItems = Array.from(nav.querySelectorAll(".navitem"));
 
-    buildFinderRows(tbody);
+    const appRows = () => {
+      const defaults = Object.values(DEFAULT_APPS).map(app => ({
+        name: app.title,
+        date: "Just now",
+        size: "--",
+        kind: "application",
+        open: "app",
+        url: app.url,
+        title: app.title,
+      }));
+      const saved = loadSavedApps().map(app => ({
+        name: app.name,
+        date: "Just now",
+        size: "--",
+        kind: "application",
+        open: "app",
+        url: app.url,
+        title: app.name,
+      }));
+      return defaults.concat(saved).sort((a, b) => a.name.localeCompare(b.name));
+    };
+
+    const systemRows = () => ([
+      { name: "Terminal", date: "Just now", size: "--", kind: "system app", open: "terminal" },
+      { name: "Files", date: "Just now", size: "--", kind: "system app", open: "files" },
+    ]);
+
+    const emptyRows = () => ([]);
+
+    const sections = {
+      Applications: appRows,
+      Documents: emptyRows,
+      "System Folder": systemRows,
+      Desktop: emptyRows,
+      Library: emptyRows,
+    };
+
+    const renderSection = (label) => {
+      const rows = (sections[label] || emptyRows)();
+      buildFinderRows(tbody, rows);
+      if (status) status.textContent = `${rows.length} item${rows.length === 1 ? "" : "s"}`;
+    };
+
+    const active = nav.querySelector(".navitem.active")?.textContent?.trim() || "Applications";
+    renderSection(active);
 
     nav.addEventListener("click", (e) => {
       const li = e.target.closest(".navitem");
       if (!li) return;
-      nav.querySelectorAll(".navitem").forEach(x => x.classList.remove("active"));
+      navItems.forEach(x => x.classList.remove("active"));
       li.classList.add("active");
+      renderSection(li.textContent.trim());
     });
 
     list.addEventListener("click", (e) => {
@@ -340,6 +357,21 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       list.querySelectorAll("tr.row").forEach(r => r.classList.remove("selected"));
       tr.classList.add("selected");
       if (status) status.textContent = "Selected: " + tr.children[0].textContent;
+    });
+
+    list.addEventListener("dblclick", (e) => {
+      const tr = e.target.closest("tr.row");
+      if (!tr) return;
+      const open = tr.dataset.open;
+      if (open === "terminal") {
+        createTerminalWindow();
+      } else if (open === "files") {
+        createFilesWindow();
+      } else if (open === "app") {
+        const title = tr.dataset.title || tr.children[0].textContent || "App";
+        const url = tr.dataset.url || "about:blank";
+        createAppWindow(title, url);
+      }
     });
 
     const newWinBtn = win.querySelector("[data-newwin]");
