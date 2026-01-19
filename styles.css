@@ -129,8 +129,8 @@
 
     body.cyberpunk{
       --os-bg: #000000;
-      --os-face: #000000;
-      --os-face2: #000000;
+      --os-face: rgba(0,0,0,0.5);
+      --os-face2: rgba(0,0,0,0.5);
       --os-shadow: #ff3b30;
       --os-dark: #ff3b30;
       --os-white: #ff3b30;
@@ -725,6 +725,16 @@
       flex: 1 1 auto;
       border: 1px solid #ff3b30;
       border-top: 0;
+      background: rgba(0,0,0,0.5);
+    }
+    body.cyberpunk .sidebar,
+    body.cyberpunk .main,
+    body.cyberpunk .listwrap,
+    body.cyberpunk .appwrap,
+    body.cyberpunk .browserwrap,
+    body.cyberpunk .noteswrap,
+    body.cyberpunk .themeswrap,
+    body.cyberpunk .notestext{
       background: rgba(0,0,0,0.5);
     }
     body.cyberpunk .window.bevel-out,
