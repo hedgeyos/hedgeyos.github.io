@@ -1350,6 +1350,10 @@
 
     /* ===== Responsive tweaks ===== */
     @media (max-width: 760px){
+      .window{
+        max-width: calc(100vw - 12px);
+        max-height: calc(100vh - 12px - var(--menubar-h));
+      }
       .window-body{ grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
       .sidebar{
         grid-template-rows: auto auto;
