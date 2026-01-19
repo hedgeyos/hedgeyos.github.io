@@ -468,6 +468,12 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (fitAddon) fitAddon.fit();
       term.writeln("Starting Wasmer shell...");
 
+      if (!window.crossOriginIsolated) {
+        term.writeln("Shell needs cross-origin isolation (COOP/COEP).");
+        term.writeln("Reload the page to let the service worker activate.");
+        term.writeln("");
+      }
+
       let WasmerSDK = null;
       try{
         WasmerSDK = await import("https://unpkg.com/@wasmer/sdk@0.10.0/dist/index.mjs");
@@ -492,27 +498,35 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       const home = new Directory();
       await home.writeFile("README.txt", "Welcome to HedgeyOS shell.\n");
 
-      let pkg;
-      try{
-        pkg = await Wasmer.fromRegistry("sharrattj/bash");
-      } catch (err){
-        term.writeln("Failed to fetch shell package.");
-        term.writeln(String(err));
-        return;
+      let instance = null;
+      const shells = ["sharrattj/bash", "sharrattj/dash"];
+      for (const name of shells) {
+        try{
+          term.writeln(`Loading ${name}...`);
+          const pkg = await Wasmer.fromRegistry(name);
+          term.reset();
+          term.writeln("HedgeyOS WebAssembly Shell");
+          instance = await pkg.entrypoint.run({
+            args: ["-i"],
+            mount: { "/home": home },
+            cwd: "/home",
+            env: {
+              TERM: "xterm-256color",
+              PS1: "\\u@hedgey:\\w$ ",
+            },
+          });
+          break;
+        } catch (err){
+          term.writeln(`Failed to start ${name}.`);
+          term.writeln(String(err));
+          term.writeln("");
+        }
       }
 
-      term.reset();
-      term.writeln("HedgeyOS WebAssembly Shell");
-
-      const instance = await pkg.entrypoint.run({
-        args: ["-i"],
-        mount: { "/home": home },
-        cwd: "/home",
-        env: {
-          TERM: "xterm-256color",
-          PS1: "\\u@hedgey:\\w$ ",
-        },
-      });
+      if (!instance) {
+        term.writeln("No shell could be started.");
+        return;
+      }
 
       const encoder = new TextEncoder();
       const decoder = new TextDecoder();
