@@ -403,6 +403,9 @@
         0 1px 0 rgba(255,255,255,0.4);
       grid-template-columns: max-content max-content max-content;
     }
+    body.beos .window.bevel-out{
+      background: transparent;
+    }
     body.dark .title:before,
     body.dark .title:after{
       background:
