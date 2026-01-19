@@ -437,11 +437,24 @@
     }
     body.system7 .title:before,
     body.system7 .title:after{
-      display: none;
+      display: block;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          #000 0px,
+          #000 1px,
+          #fff 1px,
+          #fff 2px
+        );
+      opacity: 1;
     }
     body.system7 .window.inactive .titlebar{
       background: #ffffff;
       filter: none;
+    }
+    body.system7 .window.inactive .title:before,
+    body.system7 .window.inactive .title:after{
+      display: none;
     }
     body.system7 .bevel-out,
     body.system7 .bevel-out.thick,
