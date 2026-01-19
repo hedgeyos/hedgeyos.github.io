@@ -465,6 +465,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const statusEl = win.querySelector("[data-v86-status]");
     const capture = win.querySelector("[data-v86-capture]");
     const keyOverlay = win.querySelector("[data-v86-keys]");
+    const keyboardBtn = win.querySelector("[data-v86-keyboard]");
     if (!screen) return;
 
     const setStatus = (text) => {
@@ -545,8 +546,13 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     if (capture) {
       capture.tabIndex = 0;
       capture.setAttribute("aria-label", "Terminal input capture");
-      capture.setAttribute("contenteditable", "true");
+      capture.setAttribute("autocapitalize", "off");
+      capture.setAttribute("autocomplete", "off");
+      capture.setAttribute("autocorrect", "off");
+      capture.setAttribute("inputmode", "text");
+      capture.spellcheck = false;
       capture.addEventListener("pointerdown", focusScreen);
+      capture.addEventListener("touchstart", focusScreen, { passive: true });
       capture.addEventListener("keydown", (e) => {
         const sentSpecial = sendSpecialKey(e.key);
         if (!sentSpecial && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -557,6 +563,26 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         }
         e.preventDefault();
       });
+      capture.addEventListener("input", (e) => {
+        const value = e.target.value;
+        if (!value) return;
+        emulator.keyboard_send_text?.(value);
+        if (keyOverlay) {
+          keyOverlay.textContent = `Input: ${value}`;
+        }
+        e.target.value = "";
+      });
+    }
+    if (keyboardBtn && capture) {
+      const showKeyboard = () => {
+        focusScreen();
+        setTimeout(() => capture.focus(), 0);
+      };
+      keyboardBtn.addEventListener("click", showKeyboard);
+      keyboardBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        showKeyboard();
+      }, { passive: false });
     }
 
     // Avoid dynamic scale changes on resize; CSS stretching keeps the view stable.
