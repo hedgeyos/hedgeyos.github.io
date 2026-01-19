@@ -127,6 +127,29 @@
       --inactive-bot: #000000;
     }
 
+    body.cyberpunk{
+      --os-bg: #000000;
+      --os-face: #000000;
+      --os-face2: #000000;
+      --os-shadow: #ff3b30;
+      --os-dark: #ff3b30;
+      --os-white: #ff3b30;
+      --os-black: #ff3b30;
+      --os-blue: #ff3b30;
+
+      --menubar-top: #000000;
+      --menubar-bot: #000000;
+
+      --titlebar-top: #000000;
+      --titlebar-bot: #000000;
+
+      --chrome-top: #000000;
+      --chrome-bot: #000000;
+
+      --inactive-top: #000000;
+      --inactive-bot: #000000;
+    }
+
     @font-face{
       font-family: "ChicagoKare";
       src: url("fonts/ChicagoKare-Regular.woff2") format("woff2");
@@ -578,6 +601,110 @@
     body.greenscreen .notesbar{
       background: #000000;
       border-color: #00ff66;
+    }
+
+    body.cyberpunk,
+    body.cyberpunk *{
+      color: #ff3b30;
+    }
+    body.cyberpunk .bevel-out,
+    body.cyberpunk .bevel-out.thick,
+    body.cyberpunk .bevel-in{
+      background: #000000;
+      border: 1px solid #ff3b30;
+      box-shadow: none;
+    }
+    body.cyberpunk .bevel-out.thick,
+    body.cyberpunk .bevel-in{
+      border-width: 1px;
+    }
+    body.cyberpunk .hairline{
+      outline: none;
+    }
+    body.cyberpunk .os9-box,
+    body.cyberpunk .btn,
+    body.cyberpunk .field,
+    body.cyberpunk .ro,
+    body.cyberpunk .swatch,
+    body.cyberpunk .menu,
+    body.cyberpunk .menu-dropdown,
+    body.cyberpunk .menu-item{
+      box-shadow: none;
+      border: 1px solid #ff3b30;
+      background: #000000;
+      color: #ff3b30;
+    }
+    body.cyberpunk .menu.open{
+      background: #ff3b30;
+      color: #000000;
+    }
+    body.cyberpunk .menu-item:hover{
+      background: #ff3b30;
+      color: #000000;
+    }
+    body.cyberpunk .titlebar{
+      background: #ff3b30;
+      border: 1px solid #ff3b30;
+      box-shadow: none;
+    }
+    body.cyberpunk .title > span{
+      background: transparent;
+      color: #000000;
+      font-weight: 700;
+    }
+    body.cyberpunk .window.inactive .titlebar{
+      background: #000000;
+      border: 1px solid #ff3b30;
+    }
+    body.cyberpunk .window.inactive .title > span{
+      color: #ff3b30;
+    }
+    body.cyberpunk .title:before,
+    body.cyberpunk .title:after{
+      display: none;
+    }
+    body.cyberpunk .menu-dropdown{
+      background: #000000;
+    }
+    body.cyberpunk table.list thead th,
+    body.cyberpunk .statusbar,
+    body.cyberpunk .toolbar,
+    body.cyberpunk .browserbar,
+    body.cyberpunk .notesbar{
+      background: #000000;
+      border-color: #ff3b30;
+    }
+
+    body.cyberpunk .titlebar{
+      display: inline-grid;
+      width: fit-content;
+      max-width: calc(100% - 24px);
+      justify-self: start;
+      align-self: start;
+      margin: 4px 12px 0 10px;
+      border-radius: 7px 7px 0 0;
+      grid-template-columns: max-content max-content max-content;
+    }
+    body.cyberpunk .window{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    body.cyberpunk .window > .window-body,
+    body.cyberpunk .window > .appwrap,
+    body.cyberpunk .window > .browserwrap,
+    body.cyberpunk .window > .noteswrap,
+    body.cyberpunk .window > .themeswrap{
+      align-self: stretch;
+      width: 100%;
+      flex: 1 1 auto;
+      border: 1px solid #ff3b30;
+      border-top: 0;
+    }
+    body.cyberpunk .window.bevel-out,
+    body.cyberpunk .window.bevel-out.thick{
+      border: 0;
+      background: transparent;
     }
     body.beos .window{
       display: flex;

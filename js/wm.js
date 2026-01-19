@@ -468,6 +468,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         label: "Greenscreen",
         desc: "Flat black-and-green CRT terminal vibe with glowing accents.",
       },
+      cyberpunk: {
+        label: "Cyberpunk Red",
+        desc: "BeOS-style tabs with flat black-and-red chrome.",
+      },
       beos: {
         label: "BeOS",
         desc: "Warm BeOS yellow title bars and a brighter, punchier contrast.",
