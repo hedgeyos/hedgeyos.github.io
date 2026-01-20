@@ -10,7 +10,6 @@
     { "id": "unconnectedChat", "title": "Unconnected AI Chat", "url": "https://chat.unconnected.ai", "section": "apps" },
     { "id": "hedgeyTown", "title": "3D Hedgey Town", "url": "https://blueprintwalk.berrry.app/", "section": "apps" },
     { "id": "chordynaut", "title": "Chordynaut", "url": "https://chordynaut.com", "section": "apps" },
-    { "id": "decentricityX", "title": "Decentricity on X", "url": "embed:decentricity-x", "section": "apps" },
     { "id": "about", "title": "About", "url": "https://decentricity.github.io", "section": "apps" },
 
     { "id": "terminal", "title": "DecenTerminal", "url": "https://decentricityos.berrry.app/", "section": "apps" },
