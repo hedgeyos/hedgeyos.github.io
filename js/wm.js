@@ -587,12 +587,24 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
             content.innerHTML = '<div class="empty">No items found.</div>';
             return;
           }
-          content.innerHTML = items.map(item => \`
-            <div class="item">
-              <h3><a href="\${item.link}" target="_blank" rel="noopener">\${item.title}</a></h3>
-              <div class="meta">\${item.pubDate}</div>
-            </div>
-          \`).join("");
+          content.innerHTML = "";
+          items.forEach(item => {
+            const wrap = document.createElement("div");
+            wrap.className = "item";
+            const title = document.createElement("h3");
+            const link = document.createElement("a");
+            link.href = item.link;
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.textContent = item.title;
+            title.appendChild(link);
+            const meta = document.createElement("div");
+            meta.className = "meta";
+            meta.textContent = item.pubDate;
+            wrap.appendChild(title);
+            wrap.appendChild(meta);
+            content.appendChild(wrap);
+          });
         } catch (err) {
           content.innerHTML = '<div class="empty">Failed to load feed.</div>';
         }
