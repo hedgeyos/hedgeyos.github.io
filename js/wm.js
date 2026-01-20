@@ -549,7 +549,14 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         for (const feed of feeds){
           const btn = document.createElement("button");
           btn.className = "tab" + (feed.id === activeId ? " active" : "");
-          btn.textContent = feed.url.replace(/^https?:\\/\\//, "");
+          const label = feed.url.trim();
+          if (label.startsWith("https://")) {
+            btn.textContent = label.slice(8);
+          } else if (label.startsWith("http://")) {
+            btn.textContent = label.slice(7);
+          } else {
+            btn.textContent = label;
+          }
           btn.addEventListener("click", () => {
             activeId = feed.id;
             render();
