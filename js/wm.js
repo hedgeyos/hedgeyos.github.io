@@ -506,19 +506,27 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       let feeds = [];
       let activeId = null;
 
+      let storageOk = true;
+
       function loadFeeds(){
         try {
           const raw = localStorage.getItem(storageKey);
           feeds = raw ? JSON.parse(raw) : [];
           if (!Array.isArray(feeds)) feeds = [];
         } catch {
+          storageOk = false;
           feeds = [];
         }
         if (feeds.length && !activeId) activeId = feeds[0].id;
       }
 
       function saveFeeds(){
-        localStorage.setItem(storageKey, JSON.stringify(feeds));
+        if (!storageOk) return;
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(feeds));
+        } catch {
+          storageOk = false;
+        }
       }
 
       function addFeed(url){
