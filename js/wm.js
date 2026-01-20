@@ -1,9 +1,9 @@
 import { toEmbedUrl } from "./embedify.js";
-import { DEFAULT_APPS, NOTES_KEY } from "./constants.js";
+import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
 import { loadSavedApps } from "./storage.js";
 
-export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, theme }){
+export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, terminalTpl, themesTpl } = templates;
   const DesktopIcons = createDesktopIcons({ iconLayer, desktop });
 
@@ -298,7 +298,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const navItems = Array.from(nav.querySelectorAll(".navitem"));
 
     const appRows = () => {
-      const defaults = Object.values(DEFAULT_APPS).map(app => ({
+      const defaults = Object.values(appsMap || {}).map(app => ({
         name: app.title,
         date: "Just now",
         size: "--",
@@ -306,7 +306,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         open: "app",
         url: app.url,
         title: app.title,
-      }));
+      })).filter(row => row.url);
       const saved = loadSavedApps().map(app => ({
         name: app.name,
         date: "Just now",

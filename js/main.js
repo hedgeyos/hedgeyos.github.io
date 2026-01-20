@@ -1,4 +1,4 @@
-import { DEFAULT_APPS, BOOT_KEY } from "./constants.js";
+import { BOOT_KEY } from "./constants.js";
 import { createSaveDialog } from "./save-dialog.js";
 import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
@@ -11,54 +11,89 @@ const desktop = document.getElementById("desktop");
 const iconLayer = document.getElementById("iconLayer");
 const openWindowsList = document.getElementById("openWindowsList");
 
-const appsMenu = createAppsMenu({
-  savedAppsList: document.getElementById("savedAppsList"),
-});
-
-const saveDialog = createSaveDialog({
-  modal: document.getElementById("saveModal"),
-  nameField: document.getElementById("saveAppName"),
-  urlField: document.getElementById("saveAppUrl"),
-  btnNo: document.getElementById("saveNo"),
-  btnYes: document.getElementById("saveYes"),
-  onSaved: () => appsMenu.renderSavedApps(),
-});
-
-const wm = createWindowManager({
-  desktop,
-  iconLayer,
-  templates: {
-    finderTpl: document.getElementById("finderTemplate"),
-    appTpl: document.getElementById("appTemplate"),
-    browserTpl: document.getElementById("browserTemplate"),
-    notesTpl: document.getElementById("notesTemplate"),
-    terminalTpl: document.getElementById("terminalTemplate"),
-    themesTpl: document.getElementById("themesTemplate"),
-  },
-  openWindowsList,
-  saveDialog,
-  appsMenu,
-  theme: { applyTheme, getTheme },
-});
-
-const hud = createHud({
-  video: document.getElementById("hudFeed"),
-  body: document.body,
-  switchButton: document.getElementById("hudSwitch"),
-});
-
-initMenuDropdowns({ menubar });
-initMenuActions({ menubar, wm, appsMenu, defaultApps: DEFAULT_APPS, hud });
-initThemeToggle({ button: document.getElementById("modebtn") });
-initThemeState();
-
-const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
-wm.createFilesWindow();
-
-if (firstBoot){
-  const pre = "HedgeyOS was made by Decentricity. Follow me on X!";
-  wm.createNotesWindow({ prefill: pre, forcePrefill: true });
-  localStorage.setItem(BOOT_KEY, "1");
-} else {
-  wm.createNotesWindow();
+async function loadAppsConfig(){
+  try{
+    const resp = await fetch("apps.json", { cache: "no-store" });
+    if (!resp.ok) throw new Error(`apps.json failed: ${resp.status}`);
+    const data = await resp.json();
+    if (!data || !Array.isArray(data.apps)) throw new Error("apps.json missing apps");
+    return data;
+  } catch (err){
+    console.error(err);
+    return { apps: [] };
+  }
 }
+
+function toAppsMap(appsConfig){
+  const map = {};
+  for (const app of appsConfig.apps || []){
+    if (!app || !app.id) continue;
+    map[app.id] = { title: app.title || app.id, url: app.url || "" };
+  }
+  return map;
+}
+
+async function boot(){
+  const appsConfig = await loadAppsConfig();
+  const appsMap = toAppsMap(appsConfig);
+
+  const appsMenu = createAppsMenu({
+    savedAppsList: document.getElementById("savedAppsList"),
+    appsList: document.getElementById("appsList"),
+    appsConfig,
+  });
+
+  const saveDialog = createSaveDialog({
+    modal: document.getElementById("saveModal"),
+    nameField: document.getElementById("saveAppName"),
+    urlField: document.getElementById("saveAppUrl"),
+    btnNo: document.getElementById("saveNo"),
+    btnYes: document.getElementById("saveYes"),
+    onSaved: () => appsMenu.renderSavedApps(),
+  });
+
+  const wm = createWindowManager({
+    desktop,
+    iconLayer,
+    templates: {
+      finderTpl: document.getElementById("finderTemplate"),
+      appTpl: document.getElementById("appTemplate"),
+      browserTpl: document.getElementById("browserTemplate"),
+      notesTpl: document.getElementById("notesTemplate"),
+      terminalTpl: document.getElementById("terminalTemplate"),
+      themesTpl: document.getElementById("themesTemplate"),
+    },
+    openWindowsList,
+    saveDialog,
+    appsMenu,
+    appsMap,
+    theme: { applyTheme, getTheme },
+  });
+
+  const hud = createHud({
+    video: document.getElementById("hudFeed"),
+    body: document.body,
+    switchButton: document.getElementById("hudSwitch"),
+  });
+
+  initMenuDropdowns({ menubar });
+  initMenuActions({ menubar, wm, appsMenu, defaultApps: appsMap, hud });
+  initThemeToggle({ button: document.getElementById("modebtn") });
+  initThemeState();
+
+  appsMenu.renderAppsMenu();
+  appsMenu.renderSavedApps();
+
+  const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
+  wm.createFilesWindow();
+
+  if (firstBoot){
+    const pre = "HedgeyOS was made by Decentricity. Follow me on X!";
+    wm.createNotesWindow({ prefill: pre, forcePrefill: true });
+    localStorage.setItem(BOOT_KEY, "1");
+  } else {
+    wm.createNotesWindow();
+  }
+}
+
+boot();
