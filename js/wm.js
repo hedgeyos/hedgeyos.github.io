@@ -380,6 +380,30 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
   function wireAppUI(win, url){
     const iframe = win.querySelector("[data-iframe]");
+    if (url === "embed:decentricity-x") {
+      iframe.removeAttribute("src");
+      iframe.srcdoc = `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      html, body { height: 100%; margin: 0; }
+      body { font: 14px/1.4 "Helvetica Neue", Arial, sans-serif; background: #ffffff; }
+      .wrap { padding: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <a class="twitter-timeline" href="https://twitter.com/decentricity?ref_src=twsrc%5Etfw">Tweets by decentricity</a>
+    </div>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+  </body>
+</html>
+      `.trim();
+      return;
+    }
     iframe.src = url;
   }
 

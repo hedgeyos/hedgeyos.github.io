@@ -5,6 +5,7 @@ export const DEFAULT_APPS = {
   hedgeyTown: { title: "3D Hedgey Town", url: "https://blueprintwalk.berrry.app/" },
   chordynaut: { title: "Chordynaut", url: "https://chordynaut.com" },
   about: { title: "About", url: "https://decentricity.github.io" },
+  decentricityX: { title: "Decentricity on X", url: "embed:decentricity-x" },
 
   terminal: { title: "DecenTerminal", url: "https://decentricityos.berrry.app/" },
   python: { title: "PythonCity", url: "https://pythoncity.berrry.app/" },
