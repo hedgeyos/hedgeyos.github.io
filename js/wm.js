@@ -380,7 +380,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
   function wireAppUI(win, url){
     const iframe = win.querySelector("[data-iframe]");
-    if (url === "embed:decentricity-x") {
+    if (url === "embed:rss") {
       iframe.removeAttribute("src");
       iframe.srcdoc = `
 <!doctype html>
@@ -389,16 +389,227 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-      html, body { height: 100%; margin: 0; }
-      body { font: 14px/1.4 "Helvetica Neue", Arial, sans-serif; background: #ffffff; }
-      .wrap { padding: 12px; }
+      :root {
+        color-scheme: light;
+        font: 14px/1.4 "Helvetica Neue", Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        background: #f5f6f7;
+        color: #1b1b1b;
+      }
+      .wrap {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        min-height: 100vh;
+      }
+      .header {
+        padding: 12px;
+        border-bottom: 1px solid #d2d6db;
+        background: #ffffff;
+      }
+      .header h1 {
+        margin: 0 0 6px 0;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .feed-add {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+      .feed-add input {
+        padding: 8px 10px;
+        border: 1px solid #c4c8ce;
+        border-radius: 6px;
+        font: inherit;
+      }
+      .feed-add button {
+        padding: 8px 12px;
+        border: 1px solid #1c1f25;
+        background: #1c1f25;
+        color: #ffffff;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        padding: 8px 12px;
+        border-bottom: 1px solid #d2d6db;
+        background: #eef0f3;
+        overflow-x: auto;
+      }
+      .tab {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid #cdd2d8;
+        cursor: pointer;
+        white-space: nowrap;
+        font-size: 12px;
+      }
+      .tab.active {
+        background: #1c1f25;
+        color: #ffffff;
+        border-color: #1c1f25;
+      }
+      .content {
+        padding: 12px;
+        overflow: auto;
+      }
+      .empty {
+        padding: 24px;
+        text-align: center;
+        color: #6b7280;
+      }
+      .item {
+        border-bottom: 1px solid #e0e4e8;
+        padding: 10px 0;
+      }
+      .item h3 {
+        margin: 0 0 4px 0;
+        font-size: 14px;
+      }
+      .item a {
+        color: #1c4fd7;
+        text-decoration: none;
+      }
+      .item a:hover { text-decoration: underline; }
+      .meta {
+        font-size: 11px;
+        color: #6b7280;
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <a class="twitter-timeline" href="https://twitter.com/decentricity?ref_src=twsrc%5Etfw">Tweets by decentricity</a>
+      <div class="header">
+        <h1>RSS Reader</h1>
+        <div class="feed-add">
+          <input id="feedUrl" type="url" placeholder="Paste RSS feed URL..." />
+          <button id="addFeed">Add</button>
+        </div>
+      </div>
+      <div class="tabs" id="tabs"></div>
+      <div class="content" id="content">
+        <div class="empty">Add a feed to get started.</div>
+      </div>
     </div>
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <script>
+      const storageKey = "hedgey_rss_feeds_v1";
+      const feedInput = document.getElementById("feedUrl");
+      const addBtn = document.getElementById("addFeed");
+      const tabs = document.getElementById("tabs");
+      const content = document.getElementById("content");
+      let feeds = [];
+      let activeId = null;
+
+      function loadFeeds(){
+        try {
+          const raw = localStorage.getItem(storageKey);
+          feeds = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(feeds)) feeds = [];
+        } catch {
+          feeds = [];
+        }
+        if (feeds.length && !activeId) activeId = feeds[0].id;
+      }
+
+      function saveFeeds(){
+        localStorage.setItem(storageKey, JSON.stringify(feeds));
+      }
+
+      function addFeed(url){
+        const u = (url || "").trim();
+        if (!u) return;
+        const id = "f" + Math.random().toString(36).slice(2, 8);
+        feeds.push({ id, url: u });
+        activeId = id;
+        saveFeeds();
+        render();
+      }
+
+      function renderTabs(){
+        tabs.innerHTML = "";
+        if (!feeds.length) {
+          tabs.style.display = "none";
+          return;
+        }
+        tabs.style.display = "flex";
+        for (const feed of feeds){
+          const btn = document.createElement("button");
+          btn.className = "tab" + (feed.id === activeId ? " active" : "");
+          btn.textContent = feed.url.replace(/^https?:\/\//, "");
+          btn.addEventListener("click", () => {
+            activeId = feed.id;
+            render();
+          });
+          tabs.appendChild(btn);
+        }
+      }
+
+      async function fetchFeed(feed){
+        const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(feed.url);
+        const resp = await fetch(proxy);
+        if (!resp.ok) throw new Error("Failed to load feed.");
+        const text = await resp.text();
+        const doc = new DOMParser().parseFromString(text, "text/xml");
+        const items = Array.from(doc.querySelectorAll("item, entry"));
+        return items.slice(0, 30).map(item => {
+          const title = item.querySelector("title")?.textContent?.trim() || "Untitled";
+          const linkEl = item.querySelector("link");
+          const link = linkEl?.getAttribute("href") || linkEl?.textContent || "#";
+          const pubDate = item.querySelector("pubDate, updated, published")?.textContent?.trim() || "";
+          return { title, link, pubDate };
+        });
+      }
+
+      async function renderContent(){
+        const feed = feeds.find(f => f.id === activeId);
+        if (!feed) {
+          content.innerHTML = '<div class="empty">Add a feed to get started.</div>';
+          return;
+        }
+        content.innerHTML = '<div class="empty">Loading feed...</div>';
+        try {
+          const items = await fetchFeed(feed);
+          if (!items.length) {
+            content.innerHTML = '<div class="empty">No items found.</div>';
+            return;
+          }
+          content.innerHTML = items.map(item => \`
+            <div class="item">
+              <h3><a href="\${item.link}" target="_blank" rel="noopener">\${item.title}</a></h3>
+              <div class="meta">\${item.pubDate}</div>
+            </div>
+          \`).join("");
+        } catch (err) {
+          content.innerHTML = '<div class="empty">Failed to load feed.</div>';
+        }
+      }
+
+      function render(){
+        renderTabs();
+        renderContent();
+      }
+
+      addBtn.addEventListener("click", () => {
+        addFeed(feedInput.value);
+        feedInput.value = "";
+        feedInput.focus();
+      });
+      feedInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          addBtn.click();
+        }
+      });
+
+      loadFeeds();
+      render();
+    </script>
   </body>
 </html>
       `.trim();
