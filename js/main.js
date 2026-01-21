@@ -102,10 +102,19 @@ async function boot(){
     showToast('Your files are encrypted. <span class="toast-link">Click here for key operations.</span>');
   });
 
+  function openKeyOperations(){
+    openKeyModal(true);
+  }
+
   if (toast) {
     toast.addEventListener("click", () => {
-      // Placeholder for future key management UI.
+      openKeyOperations();
     });
+  }
+
+  const keyBtn = document.getElementById("keybtn");
+  if (keyBtn) {
+    keyBtn.addEventListener("click", () => openKeyOperations());
   }
 
   const keyModal = document.getElementById("keyModal");
