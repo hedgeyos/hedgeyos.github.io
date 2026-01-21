@@ -227,7 +227,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (!raf) {
         raf = requestAnimationFrame(() => {
           const tilt = pendingDx / 9 + pendingDy / 80;
-          const rotate = Math.abs(tilt) > maxTilt ? 0 : tilt;
+          const rotate = Math.max(-maxTilt, Math.min(maxTilt, tilt));
           win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${rotate}deg)`;
           raf = null;
         });
