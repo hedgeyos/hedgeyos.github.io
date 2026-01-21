@@ -274,18 +274,25 @@
     }
     .menu-sub{
       position: relative;
+      width: 100%;
+    }
+    .menu-subtitle{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .menu-subtitle::after{
       content: "›";
-      float: right;
       opacity: 0.6;
+      margin-left: 10px;
     }
     .menu-sub .menu-dropdown{
       display: none;
       position: absolute;
-      top: -2px;
-      left: calc(100% - 2px);
-      min-width: 200px;
+      top: 0;
+      left: 100%;
+      min-width: 220px;
       max-height: min(50vh, 420px);
       overflow: auto;
       z-index: 10010;
