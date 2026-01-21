@@ -492,6 +492,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       document.querySelectorAll(".context-menu").forEach(m => m.remove());
       const menu = document.createElement("div");
       menu.className = "menu-dropdown bevel-out hairline context-menu";
+      menu.style.display = "block";
       menu.style.position = "fixed";
       menu.style.left = `${e.clientX}px`;
       menu.style.top = `${e.clientY}px`;
