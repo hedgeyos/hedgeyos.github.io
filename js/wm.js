@@ -1,7 +1,8 @@
 import { toEmbedUrl } from "./embedify.js";
 import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
-import { loadSavedApps, loadNotesFiles, getNotesFileById, getNotesFileByName, saveNotesFile } from "./storage.js";
+import { loadSavedApps } from "./storage.js";
+import { listFiles, listNotes, getFileById, saveNote, downloadFile } from "./filesystem.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
@@ -358,15 +359,15 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       { name: "Files", date: "Just now", size: "--", kind: "system app", open: "files" },
     ]);
 
-    const docsRows = () => {
-      const files = loadNotesFiles();
+    const docsRows = async () => {
+      const files = await listFiles();
       return files
         .map(file => ({
           name: file.name,
           date: new Date(file.updatedAt).toLocaleString(),
-          size: `${file.content.length} B`,
-          kind: "note",
-          open: "note",
+          size: `${file.size || 0} B`,
+          kind: file.kind === "note" ? "note" : (file.type || "file"),
+          open: file.kind === "note" ? "note" : "download",
           fileId: file.id,
         }))
         .sort((a, b) => a.name.localeCompare(b.name));
@@ -382,8 +383,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       Library: emptyRows,
     };
 
-    const renderSection = (label) => {
-      const rows = (sections[label] || emptyRows)();
+    const renderSection = async (label) => {
+      const rows = await Promise.resolve((sections[label] || emptyRows)());
       buildFinderRows(tbody, rows);
       if (status) status.textContent = `${rows.length} item${rows.length === 1 ? "" : "s"}`;
     };
@@ -418,6 +419,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       } else if (open === "note") {
         const fileId = tr.dataset.fileId || "";
         createNotesWindow({ fileId });
+      } else if (open === "download") {
+        const fileId = tr.dataset.fileId || "";
+        if (fileId) downloadFile(fileId);
       } else if (open === "app") {
         const title = tr.dataset.title || tr.children[0].textContent || "App";
         const url = tr.dataset.url || "about:blank";
@@ -427,6 +431,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
     const newWinBtn = win.querySelector("[data-newwin]");
     if (newWinBtn) newWinBtn.addEventListener("click", () => createFilesWindow());
+    const uploadBtn = win.querySelector("[data-upload]");
+    if (uploadBtn) uploadBtn.addEventListener("click", () => createAppWindow("Upload", "apps/upload/index.html"));
 
     const onDocsChanged = () => {
       const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
@@ -548,15 +554,16 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
 
     if (fileId) {
-      const found = getNotesFileById(fileId);
-      if (found) {
-        ta.value = found.content || "";
-        fileName = found.name || "";
-        setTitle(fileName);
-        setStatus("Opened " + (fileName || "Notes"));
-      } else {
-        fileId = "";
-      }
+      getFileById(fileId).then((found) => {
+        if (found && found.kind === "note") {
+          ta.value = found.content || "";
+          fileName = found.name || "";
+          setTitle(fileName);
+          setStatus("Opened " + (fileName || "Notes"));
+        } else {
+          fileId = "";
+        }
+      });
     }
 
     if (!fileId) {
@@ -592,12 +599,12 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
 
     if (btnOpen) {
-      btnOpen.addEventListener("click", () => {
+      btnOpen.addEventListener("click", async () => {
         if (!openModal || !openList || !openCancel || !openConfirm) {
           setStatus("Open dialog not available");
           return;
         }
-        const files = loadNotesFiles();
+        const files = await listNotes();
         if (!files.length) {
           setStatus("No saved notes yet");
           return;
@@ -627,9 +634,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
           openModal.classList.remove("open");
           openModal.setAttribute("aria-hidden", "true");
         };
-        openConfirm.onclick = () => {
-          const selected = pendingOpenId ? getNotesFileById(pendingOpenId) : null;
-          if (!selected) {
+        openConfirm.onclick = async () => {
+          const selected = pendingOpenId ? await getFileById(pendingOpenId) : null;
+          if (!selected || selected.kind !== "note") {
             setStatus("File not found");
             return;
           }
@@ -648,13 +655,13 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
 
     if (btnSave) {
-      btnSave.addEventListener("click", () => {
+      btnSave.addEventListener("click", async () => {
         let name = fileName;
         if (!name) {
           name = window.prompt("Name this note:", "Untitled");
           if (!name) return;
         }
-        const savedFile = saveNotesFile({ id: fileId || null, name, content: ta.value });
+        const savedFile = await saveNote({ id: fileId || null, name, content: ta.value });
         if (!savedFile) {
           setStatus("Save canceled");
           return;
