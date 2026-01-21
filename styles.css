@@ -264,6 +264,36 @@
       opacity: 0.85;
       pointer-events: none;
     }
+    #appsDropdown{
+      overflow: visible;
+    }
+    #appsList{
+      max-height: min(45vh, 380px);
+      overflow: auto;
+      padding: 2px;
+    }
+    .menu-sub{
+      position: relative;
+    }
+    .menu-subtitle::after{
+      content: "›";
+      float: right;
+      opacity: 0.6;
+    }
+    .menu-sub .menu-dropdown{
+      display: none;
+      position: absolute;
+      top: -2px;
+      left: calc(100% - 2px);
+      min-width: 200px;
+      max-height: min(50vh, 420px);
+      overflow: auto;
+      z-index: 10010;
+    }
+    .menu-sub.open > .menu-dropdown,
+    .menu-sub:hover > .menu-dropdown{
+      display: block;
+    }
 
     .menubar-spacer{ flex: 1; }
 
