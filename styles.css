@@ -1181,6 +1181,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    #keyInfo{
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
     .notestext{
       width: 100%;
       height: 100%;

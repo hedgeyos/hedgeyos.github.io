@@ -133,9 +133,7 @@ async function boot(){
     const wrapped = await hasWrappedKey();
     if (!wrapped && !force) return;
     keyTitle.textContent = wrapped ? "Unlock Encryption" : "Set Passphrase";
-    keyDesc.textContent = wrapped
-      ? "Enter your passphrase to unlock encrypted files."
-      : "Create a passphrase to protect your files.";
+    keyDesc.textContent = wrapped ? "Enter your passphrase to unlock encrypted files." : "";
     if (keyInfo) keyInfo.style.display = wrapped ? "none" : "block";
     if (keyPassRow2) keyPassRow2.style.display = wrapped ? "none" : "grid";
     if (keyError) keyError.textContent = "";
