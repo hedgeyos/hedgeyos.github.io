@@ -100,5 +100,24 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
     openAppById(appId);
   });
 
+  window.addEventListener("hedgey:upload-complete", () => {
+    if (wm && typeof wm.focusDocumentsWindow === "function") {
+      wm.focusDocumentsWindow();
+    }
+  });
+
+  window.addEventListener("hedgey:close-upload", () => {
+    if (!wm) return;
+    const uploadWin = Array.from(document.querySelectorAll("[data-win]"))
+      .find(win => (win.querySelector("[data-titletext]")?.textContent || "") === "Upload");
+    if (!uploadWin) return;
+    const id = uploadWin.dataset.id;
+    if (id) wm.restore(id) || wm.focus(id);
+    if (id) {
+      const closeBtn = uploadWin.querySelector("[data-close]");
+      if (closeBtn) closeBtn.click();
+    }
+  });
+
   appsMenu.renderSavedApps();
 }

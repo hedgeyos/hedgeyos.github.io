@@ -333,6 +333,14 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const tbody = win.querySelector("[data-finder-rows]");
     const navItems = Array.from(nav.querySelectorAll(".navitem"));
 
+    function activateNav(label){
+      const item = navItems.find(x => x.textContent.trim() === label);
+      if (!item) return;
+      navItems.forEach(x => x.classList.remove("active"));
+      item.classList.add("active");
+      renderSection(label);
+    }
+
     const appRows = () => {
       const defaults = Object.values(appsMap || {}).map(app => ({
         name: app.title,
@@ -483,6 +491,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (/documents/i.test(activeLabel)) renderSection(activeLabel);
     };
     window.addEventListener("hedgey:docs-changed", onDocsChanged);
+
+    win._setFinderSection = activateNav;
   }
 
   function wireAppUI(win, url){
@@ -839,6 +849,29 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     return spawn(notesTpl, "Notes", { kind: "notes", notesOpts: notesOpts || null });
   }
 
+  function activateDocuments(filesWinId){
+    const st = state.get(filesWinId);
+    if (!st || !st.win) return false;
+    if (typeof st.win._setFinderSection === "function") {
+      st.win._setFinderSection("Documents");
+      focus(filesWinId);
+      return true;
+    }
+    return false;
+  }
+
+  function focusDocumentsWindow(){
+    const filesWins = Array.from(state.entries())
+      .filter(([, st]) => st.kind === "files")
+      .map(([id]) => id);
+    if (filesWins.length) {
+      return activateDocuments(filesWins[0]);
+    }
+    const newId = createFilesWindow();
+    activateDocuments(newId);
+    return true;
+  }
+
   function createTerminalWindow(){
     return spawn(appTpl, "Terminal", { kind: "app", url: "apps/terminal/index.html" });
   }
@@ -859,6 +892,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     createTerminalWindow,
     createAppWindow,
     createThemesWindow,
+    focusDocumentsWindow,
     refreshOpenWindowsMenu,
     refreshIcons,
     focus,
