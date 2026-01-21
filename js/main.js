@@ -167,6 +167,15 @@ async function boot(){
       }
     };
 
+    const onEnter = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        keyConfirm.click();
+      }
+    };
+    if (keyPass1) keyPass1.onkeydown = onEnter;
+    if (keyPass2) keyPass2.onkeydown = onEnter;
+
     if (keyKeep) {
       keyKeep.style.display = wrapped ? "none" : "inline-flex";
       keyKeep.onclick = () => {
