@@ -28,6 +28,10 @@ function openDb(){
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
+    req.onblocked = () => reject(req.error || new Error("Database upgrade blocked"));
+  }).catch((err) => {
+    dbPromise = null;
+    throw err;
   });
   return dbPromise;
 }
