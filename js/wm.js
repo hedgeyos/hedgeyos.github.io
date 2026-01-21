@@ -189,6 +189,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     let lastMoveTs = 0;
     let lastMoveX = 0;
     let lastMoveY = 0;
+    let lastTiltRaw = 0;
+    let idleTiltTimer = null;
     const maxTilt = 15;
 
     win.addEventListener("pointerdown", () => focus(id), { capture: true });
@@ -212,9 +214,14 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       currentTop = startTop;
       currentTilt = 0;
       targetTilt = 0;
+      lastTiltRaw = 0;
       lastMoveTs = performance.now();
       lastMoveX = e.clientX;
       lastMoveY = e.clientY;
+      if (idleTiltTimer) {
+        clearInterval(idleTiltTimer);
+        idleTiltTimer = null;
+      }
       win.style.willChange = "transform";
     }, { passive: false });
 
@@ -234,23 +241,36 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       pendingDx = newLeft - startLeft;
       pendingDy = newTop - startTop;
       const now = performance.now();
-      const dt = Math.max(8, now - lastMoveTs);
+      const dt = Math.max(12, now - lastMoveTs);
       const vx = (e.clientX - lastMoveX) / dt;
       const vy = (e.clientY - lastMoveY) / dt;
       const speed = Math.hypot(vx, vy);
       const tiltRaw = pendingDx / 9 + pendingDy / 80;
-      const clamped = Math.max(-maxTilt, Math.min(maxTilt, tiltRaw));
-      targetTilt = speed < 0.02 ? 0 : clamped;
+      const filtered = lastTiltRaw + (tiltRaw - lastTiltRaw) * 0.2;
+      lastTiltRaw = filtered;
+      const clamped = Math.max(-maxTilt, Math.min(maxTilt, filtered));
+      targetTilt = speed < 0.04 ? 0 : clamped;
       lastMoveTs = now;
       lastMoveX = e.clientX;
       lastMoveY = e.clientY;
 
       if (!raf) {
         raf = requestAnimationFrame(() => {
-          currentTilt += (targetTilt - currentTilt) * 0.25;
+          currentTilt += (targetTilt - currentTilt) * 0.12;
           win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${currentTilt}deg)`;
           raf = null;
         });
+      }
+
+      if (!idleTiltTimer) {
+        idleTiltTimer = setInterval(() => {
+          if (!dragging) return;
+          if (Math.abs(targetTilt) < 0.01 && Math.abs(currentTilt) < 0.05) {
+            return;
+          }
+          currentTilt += (0 - currentTilt) * 0.08;
+          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${currentTilt}deg)`;
+        }, 80);
       }
     }, { passive: false });
 
@@ -260,6 +280,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (raf) {
         cancelAnimationFrame(raf);
         raf = null;
+      }
+      if (idleTiltTimer) {
+        clearInterval(idleTiltTimer);
+        idleTiltTimer = null;
       }
       win.style.left = currentLeft + "px";
       win.style.top = currentTop + "px";
