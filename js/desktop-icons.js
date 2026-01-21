@@ -38,13 +38,24 @@ export function createDesktopIcons({ iconLayer, desktop }){
     return positions;
   }
 
-  function glyphForKind(kind){
+  function glyphForKind(kind, meta){
     if (kind === "files") return "📂";
     if (kind === "notes") return "📑";
+    if (kind === "note") return "📝";
+    if (kind === "file") {
+      const type = (meta?.type || "").toLowerCase();
+      const ext = (meta?.ext || "").toLowerCase();
+      if (type.startsWith("image/") || ["png","jpg","jpeg","gif","webp","bmp","svg"].includes(ext)) return "🖼️";
+      if (type.startsWith("video/") || ["mp4","webm","mov"].includes(ext)) return "🎞️";
+      if (type.startsWith("audio/") || ["mp3","wav","ogg"].includes(ext)) return "🎵";
+      if (type === "application/pdf" || ext === "pdf") return "📄";
+      if (["zip","rar","7z","tar","gz"].includes(ext)) return "🗜️";
+      return "📦";
+    }
     return "📔";
   }
 
-  function ensureIcon(id, title, kind, onClick){
+  function ensureIcon(id, title, kind, meta, onClick){
     let el = icons.get(id);
     if (!el){
       el = document.createElement("div");
@@ -71,7 +82,7 @@ export function createDesktopIcons({ iconLayer, desktop }){
       icons.set(id, el);
     }
 
-    el.querySelector(".glyph").textContent = glyphForKind(kind);
+    el.querySelector(".glyph").textContent = glyphForKind(kind, meta);
     const [a, b] = splitTitleTwoLines(title);
     const lines = el.querySelectorAll(".line");
     lines[0].textContent = a;
@@ -93,7 +104,7 @@ export function createDesktopIcons({ iconLayer, desktop }){
       const id = order[i];
       const meta = metaById.get(id);
       if (!meta) continue;
-      const el = ensureIcon(id, meta.title, meta.kind, onClick);
+      const el = ensureIcon(id, meta.title, meta.kind, meta, onClick);
       el.style.left = positions[i].x + "px";
       el.style.top = positions[i].y + "px";
     }

@@ -244,6 +244,11 @@
     }
     .menu.open .menu-dropdown{ display: block; }
 
+    .context-menu{
+      min-width: 160px;
+      z-index: 12010;
+    }
+
     .menu-item{
       padding: 4px 10px;
       cursor: default;

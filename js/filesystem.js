@@ -4,6 +4,7 @@ const STORE = "files";
 const META = "meta";
 const KEY_NAME = "cryptoKeyWrapped";
 const NOTICE_KEY = "hedgey_encryption_notice_v1";
+const DESKTOP_TAGS_ID = "desktopTags";
 
 let dbPromise = null;
 let cachedKey = null;
@@ -216,6 +217,33 @@ async function decryptBlob(blob, ivB64){
   return new Uint8Array(plain);
 }
 
+async function readDesktopTags(){
+  const entry = await withMeta("readonly", store => store.get(DESKTOP_TAGS_ID));
+  if (!entry || !entry.enc || !entry.blob || !entry.iv) return [];
+  try {
+    const bytes = await decryptBlob(entry.blob, entry.iv);
+    const text = new TextDecoder().decode(bytes);
+    const list = JSON.parse(text);
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeDesktopTags(list){
+  const payload = JSON.stringify(list || []);
+  const bytes = new TextEncoder().encode(payload);
+  const { iv, blob } = await encryptBytes(bytes);
+  await withMeta("readwrite", store => store.put({
+    id: DESKTOP_TAGS_ID,
+    enc: true,
+    iv,
+    blob,
+    updatedAt: Date.now(),
+  }));
+  emitEncryptionNotice();
+}
+
 export async function listFiles(){
   const db = await openDb();
   return new Promise((resolve, reject) => {
@@ -347,4 +375,18 @@ export async function readFileBlob(id){
     return { record, blob: new Blob([bytes], { type: record.type || "application/octet-stream" }) };
   }
   return { record, blob: record.blob || null };
+}
+
+export async function listDesktopTags(){
+  return readDesktopTags();
+}
+
+export async function addDesktopTag(fileId){
+  if (!fileId) return false;
+  const list = await readDesktopTags();
+  if (!list.includes(fileId)) {
+    list.push(fileId);
+    await writeDesktopTags(list);
+  }
+  return true;
 }

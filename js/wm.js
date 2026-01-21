@@ -2,7 +2,7 @@ import { toEmbedUrl } from "./embedify.js";
 import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
 import { loadSavedApps } from "./storage.js";
-import { listFiles, listNotes, getFileById, readNoteText, readFileBlob, saveNote, downloadFile } from "./filesystem.js";
+import { listFiles, listNotes, getFileById, readNoteText, readFileBlob, saveNote, downloadFile, listDesktopTags, addDesktopTag } from "./filesystem.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
@@ -55,7 +55,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
   }
 
-  function refreshIcons(){
+  async function refreshIcons(){
     const metaById = new Map();
     const order = Array.from(state.entries())
       .sort((a,b) => a[1].createdAt - b[1].createdAt)
@@ -64,7 +64,31 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         return id;
       });
 
+    const tagIds = await listDesktopTags();
+    if (tagIds.length) {
+      const files = await listFiles();
+      tagIds.forEach((fileId) => {
+        const file = files.find(f => f.id === fileId);
+        if (!file) return;
+        const ext = (file.name || "").split(".").pop() || "";
+        const iconId = `file:${file.id}`;
+        metaById.set(iconId, {
+          title: file.name || "File",
+          kind: file.kind === "note" ? "note" : "file",
+          type: file.type || "",
+          ext,
+          fileId: file.id,
+        });
+        order.push(iconId);
+      });
+    }
+
     DesktopIcons.render(order, metaById, (id) => {
+      const meta = metaById.get(id);
+      if (meta?.fileId) {
+        openFileById(meta.fileId);
+        return;
+      }
       restore(id);
       focus(id);
     });
@@ -125,8 +149,11 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
   function applyDefaultSize(win){
     const { w: dw, h: dh } = deskSize();
     const isDesktop = dw >= 900;
-    const w = Math.max(320, Math.floor(dw * (isDesktop ? 0.45 : 0.8)));
-    const h = Math.max(240, Math.floor(dh * 0.5));
+    const kind = win.dataset.kind || "";
+    const wRatio = isDesktop ? 0.45 : 0.8;
+    const hRatio = (kind === "notes" && isDesktop) ? 0.45 : 0.5;
+    const w = Math.max(320, Math.floor(dw * wRatio));
+    const h = Math.max(240, Math.floor(dh * hRatio));
     win.style.width = w + "px";
     win.style.height = h + "px";
   }
@@ -382,14 +409,31 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         .sort((a, b) => a.name.localeCompare(b.name));
     };
 
+    const desktopRows = async () => {
+      const tags = await listDesktopTags();
+      if (!tags.length) return [];
+      const files = await listFiles();
+      return tags
+        .map(id => files.find(f => f.id === id))
+        .filter(Boolean)
+        .map(file => ({
+          name: file.name,
+          date: new Date(file.updatedAt).toLocaleString(),
+          size: `${file.size || 0} B`,
+          kind: file.kind === "note" ? "note" : (file.type || "file"),
+          open: file.kind === "note" ? "note" : "download",
+          fileId: file.id,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    };
+
     const emptyRows = () => ([]);
 
     const sections = {
       Applications: appRows,
-      Documents: docsRows,
+      "Encrypted Files": docsRows,
       "System Folder": systemRows,
-      Desktop: emptyRows,
-      Library: emptyRows,
+      Desktop: desktopRows,
     };
 
     const renderSection = async (label) => {
@@ -431,55 +475,39 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       } else if (open === "download") {
         const fileId = tr.dataset.fileId || "";
         if (!fileId) return;
-        readFileBlob(fileId).then(async (payload) => {
-          if (!payload || !payload.record) return;
-          const { record: file, blob } = payload;
-          if (file.kind === "note") {
-            createNotesWindow({ fileId: file.id });
-            return;
-          }
-          const name = file.name || "File";
-          const ext = (name.split(".").pop() || "").toLowerCase();
-          const type = (file.type || "").toLowerCase();
-          const isHtml = type.includes("text/html") || ext === "html" || ext === "htm";
-          const textExts = new Set([
-            "txt","md","markdown","mdx","sh","bash","zsh","log","csv","tsv","json","yaml","yml","ini","conf","env","toml","lock",
-            "xml","svg","css","js","ts","tsx","jsx","py","rb","go","rs","php","java","c","cpp","h","hpp","bat","cmd"
-          ]);
-          const hasExt = name.includes(".");
-          const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
-          const previewExts = new Set([
-            "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
-          ]);
-          const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
-          if (isHtml && blob) {
-            const url = URL.createObjectURL(blob);
-            createAppWindow(name, url);
-            setTimeout(() => URL.revokeObjectURL(url), 20000);
-            return;
-          }
-          if (isText && blob) {
-            try{
-              const text = await blob.text();
-              createNotesWindow({ prefill: text, forcePrefill: true });
-            } catch {
-              downloadFile(fileId);
-            }
-            return;
-          }
-          if (isPreviewable && blob) {
-            const url = URL.createObjectURL(blob);
-            createAppWindow(name, url);
-            setTimeout(() => URL.revokeObjectURL(url), 20000);
-            return;
-          }
-          downloadFile(fileId);
-        });
+        openFileById(fileId);
       } else if (open === "app") {
         const title = tr.dataset.title || tr.children[0].textContent || "App";
         const url = tr.dataset.url || "about:blank";
         createAppWindow(title, url);
       }
+    });
+
+    list.addEventListener("contextmenu", (e) => {
+      const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
+      if (!/encrypted files/i.test(activeLabel)) return;
+      const tr = e.target.closest("tr.row");
+      if (!tr || !tr.dataset.fileId) return;
+      e.preventDefault();
+      document.querySelectorAll(".context-menu").forEach(m => m.remove());
+      const menu = document.createElement("div");
+      menu.className = "menu-dropdown bevel-out hairline context-menu";
+      menu.style.position = "fixed";
+      menu.style.left = `${e.clientX}px`;
+      menu.style.top = `${e.clientY}px`;
+      const item = document.createElement("div");
+      item.className = "menu-item";
+      item.textContent = "Add to Desktop";
+      item.addEventListener("click", async () => {
+        await addDesktopTag(tr.dataset.fileId);
+        window.dispatchEvent(new Event("hedgey:docs-changed"));
+        refreshIcons();
+        menu.remove();
+      });
+      menu.appendChild(item);
+      document.body.appendChild(menu);
+      const cleanup = () => { menu.remove(); document.removeEventListener("click", cleanup); };
+      setTimeout(() => document.addEventListener("click", cleanup), 0);
     });
 
     const newWinBtn = win.querySelector("[data-newwin]");
@@ -489,7 +517,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
     const onDocsChanged = () => {
       const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
-      if (/documents/i.test(activeLabel)) renderSection(activeLabel);
+      if (/encrypted files/i.test(activeLabel) || /desktop/i.test(activeLabel)) renderSection(activeLabel);
     };
     window.addEventListener("hedgey:docs-changed", onDocsChanged);
 
@@ -783,6 +811,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const frag = tpl.content.cloneNode(true);
     const win = frag.querySelector("[data-win]");
 
+    win.dataset.kind = extra?.kind || "window";
     win.dataset.id = id;
     win.style.zIndex = String(++zTop);
 
@@ -855,7 +884,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const st = state.get(filesWinId);
     if (!st || !st.win) return false;
     if (typeof st.win._setFinderSection === "function") {
-      st.win._setFinderSection("Documents");
+      st.win._setFinderSection("Encrypted Files");
       focus(filesWinId);
       return true;
     }
@@ -901,3 +930,49 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     restore,
   };
 }
+  async function openFileById(fileId){
+    if (!fileId) return;
+    const payload = await readFileBlob(fileId);
+    if (!payload || !payload.record) return;
+    const { record: file, blob } = payload;
+    if (file.kind === "note") {
+      createNotesWindow({ fileId: file.id });
+      return;
+    }
+    const name = file.name || "File";
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    const type = (file.type || "").toLowerCase();
+    const isHtml = type.includes("text/html") || ext === "html" || ext === "htm";
+    const textExts = new Set([
+      "txt","md","markdown","mdx","sh","bash","zsh","log","csv","tsv","json","yaml","yml","ini","conf","env","toml","lock",
+      "xml","svg","css","js","ts","tsx","jsx","py","rb","go","rs","php","java","c","cpp","h","hpp","bat","cmd"
+    ]);
+    const hasExt = name.includes(".");
+    const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
+    const previewExts = new Set([
+      "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
+    ]);
+    const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
+    if (isHtml && blob) {
+      const url = URL.createObjectURL(blob);
+      createAppWindow(name, url);
+      setTimeout(() => URL.revokeObjectURL(url), 20000);
+      return;
+    }
+    if (isText && blob) {
+      try{
+        const text = await blob.text();
+        createNotesWindow({ prefill: text, forcePrefill: true });
+      } catch {
+        downloadFile(fileId);
+      }
+      return;
+    }
+    if (isPreviewable && blob) {
+      const url = URL.createObjectURL(blob);
+      createAppWindow(name, url);
+      setTimeout(() => URL.revokeObjectURL(url), 20000);
+      return;
+    }
+    downloadFile(fileId);
+  }
