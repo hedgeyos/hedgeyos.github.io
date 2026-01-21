@@ -421,7 +421,40 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         createNotesWindow({ fileId });
       } else if (open === "download") {
         const fileId = tr.dataset.fileId || "";
-        if (fileId) downloadFile(fileId);
+        if (!fileId) return;
+        getFileById(fileId).then(async (file) => {
+          if (!file) return;
+          if (file.kind === "note") {
+            createNotesWindow({ fileId: file.id });
+            return;
+          }
+          const name = file.name || "File";
+          const ext = (name.split(".").pop() || "").toLowerCase();
+          const type = (file.type || "").toLowerCase();
+          const isHtml = type.includes("text/html") || ext === "html" || ext === "htm";
+          const textExts = new Set([
+            "txt","md","markdown","mdx","sh","bash","zsh","log","csv","tsv","json","yaml","yml","ini","conf","env","toml","lock",
+            "xml","svg","css","js","ts","tsx","jsx","py","rb","go","rs","php","java","c","cpp","h","hpp","bat","cmd"
+          ]);
+          const hasExt = name.includes(".");
+          const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
+          if (isHtml && file.blob) {
+            const url = URL.createObjectURL(file.blob);
+            createAppWindow(name, url);
+            setTimeout(() => URL.revokeObjectURL(url), 20000);
+            return;
+          }
+          if (isText && file.blob) {
+            try{
+              const text = await file.blob.text();
+              createNotesWindow({ prefill: text, forcePrefill: true });
+            } catch {
+              downloadFile(fileId);
+            }
+            return;
+          }
+          downloadFile(fileId);
+        });
       } else if (open === "app") {
         const title = tr.dataset.title || tr.children[0].textContent || "App";
         const url = tr.dataset.url || "about:blank";
