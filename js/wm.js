@@ -7,6 +7,10 @@ import { listFiles, listNotes, getFileById, readNoteText, readFileBlob, saveNote
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
   const DesktopIcons = createDesktopIcons({ iconLayer, desktop });
+  const downloadModal = document.getElementById("downloadModal");
+  const downloadDesc = document.getElementById("downloadDesc");
+  const downloadNo = document.getElementById("downloadNo");
+  const downloadYes = document.getElementById("downloadYes");
 
   let zTop = 20;
   let idSeq = 1;
@@ -53,6 +57,28 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       });
       openWindowsList.appendChild(item);
     }
+  }
+
+  function promptDownload(file){
+    if (!downloadModal || !downloadYes || !downloadNo) {
+      downloadFile(file.id);
+      return;
+    }
+    if (downloadDesc) {
+      const name = file?.name || "this file";
+      downloadDesc.textContent = `Decrypt and download ${name}?`;
+    }
+    downloadModal.classList.add("open");
+    downloadModal.setAttribute("aria-hidden", "false");
+    const close = () => {
+      downloadModal.classList.remove("open");
+      downloadModal.setAttribute("aria-hidden", "true");
+    };
+    downloadNo.onclick = () => close();
+    downloadYes.onclick = () => {
+      close();
+      downloadFile(file.id);
+    };
   }
 
   async function refreshIcons(){
@@ -483,24 +509,19 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       }
     });
 
-    list.addEventListener("contextmenu", (e) => {
-      const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
-      if (!/encrypted files/i.test(activeLabel)) return;
-      const tr = e.target.closest("tr.row");
-      if (!tr || !tr.dataset.fileId) return;
-      e.preventDefault();
+    const showContextMenu = (x, y, fileId) => {
       document.querySelectorAll(".context-menu").forEach(m => m.remove());
       const menu = document.createElement("div");
       menu.className = "menu-dropdown bevel-out hairline context-menu";
       menu.style.display = "block";
       menu.style.position = "fixed";
-      menu.style.left = `${e.clientX}px`;
-      menu.style.top = `${e.clientY}px`;
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
       const item = document.createElement("div");
       item.className = "menu-item";
       item.textContent = "Add to Desktop";
       item.addEventListener("click", async () => {
-        await addDesktopTag(tr.dataset.fileId);
+        await addDesktopTag(fileId);
         window.dispatchEvent(new Event("hedgey:docs-changed"));
         refreshIcons();
         menu.remove();
@@ -509,6 +530,39 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       document.body.appendChild(menu);
       const cleanup = () => { menu.remove(); document.removeEventListener("click", cleanup); };
       setTimeout(() => document.addEventListener("click", cleanup), 0);
+    };
+
+    list.addEventListener("contextmenu", (e) => {
+      const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
+      if (!/encrypted files/i.test(activeLabel)) return;
+      const tr = e.target.closest("tr.row");
+      if (!tr || !tr.dataset.fileId) return;
+      e.preventDefault();
+      showContextMenu(e.clientX, e.clientY, tr.dataset.fileId);
+    });
+
+    let longPressTimer = null;
+    let longPressRow = null;
+    list.addEventListener("touchstart", (e) => {
+      const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
+      if (!/encrypted files/i.test(activeLabel)) return;
+      const tr = e.target.closest("tr.row");
+      if (!tr || !tr.dataset.fileId) return;
+      longPressRow = tr;
+      const touch = e.touches[0];
+      longPressTimer = setTimeout(() => {
+        showContextMenu(touch.clientX, touch.clientY, tr.dataset.fileId);
+      }, 600);
+    }, { passive: true });
+    list.addEventListener("touchmove", () => {
+      if (longPressTimer) clearTimeout(longPressTimer);
+      longPressTimer = null;
+      longPressRow = null;
+    }, { passive: true });
+    list.addEventListener("touchend", () => {
+      if (longPressTimer) clearTimeout(longPressTimer);
+      longPressTimer = null;
+      longPressRow = null;
     });
 
     const newWinBtn = win.querySelector("[data-newwin]");
@@ -925,7 +979,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       setTimeout(() => URL.revokeObjectURL(url), 20000);
       return;
     }
-    downloadFile(fileId);
+    promptDownload(file);
   }
 
   function activateDocuments(filesWinId){
