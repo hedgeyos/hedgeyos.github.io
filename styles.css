@@ -279,7 +279,7 @@
       justify-content: space-between;
     }
     .menu-subtitle::after{
-      content: "›";
+      content: "➡️";
       opacity: 0.6;
       margin-left: 10px;
     }
