@@ -104,6 +104,29 @@
       --inactive-bot: #f4e3a6;
     }
 
+    body.hedgeyOS.dark{
+      --os-bg: #000000;
+      --os-face: #1a1a1a;
+      --os-face2: #222222;
+      --os-shadow: #5a5a5a;
+      --os-dark: #e5e5e5;
+      --os-white: #2c2c2c;
+      --os-black: #f2f2f2;
+      --os-blue: #6a9ff0;
+
+      --menubar-top: #1c1c1c;
+      --menubar-bot: #131313;
+
+      --titlebar-top: #6c3a48;
+      --titlebar-bot: #57303d;
+
+      --chrome-top: #1c1c1c;
+      --chrome-bot: #141414;
+
+      --inactive-top: #5a4a1c;
+      --inactive-bot: #473b15;
+    }
+
     body.system7{
       --os-bg: #bcbcbc;
       --os-face: #ffffff;
@@ -1042,6 +1065,9 @@
           rgba(220,230,255,0.25) 1px,
           rgba(0,0,0,0.35) 1px,
           rgba(0,0,0,0.35) 2px);
+    }
+    body.hedgeyOS .resize-grip{
+      bottom: 32px;
     }
 
     /* ===== Finder-ish UI ===== */
