@@ -184,6 +184,11 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     let currentLeft = 0, currentTop = 0;
     let raf = null;
     let pendingDx = 0, pendingDy = 0;
+    let currentTilt = 0;
+    let targetTilt = 0;
+    let lastMoveTs = 0;
+    let lastMoveX = 0;
+    let lastMoveY = 0;
     const maxTilt = 15;
 
     win.addEventListener("pointerdown", () => focus(id), { capture: true });
@@ -205,6 +210,11 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       startTop  = rect.top - dr.top;
       currentLeft = startLeft;
       currentTop = startTop;
+      currentTilt = 0;
+      targetTilt = 0;
+      lastMoveTs = performance.now();
+      lastMoveX = e.clientX;
+      lastMoveY = e.clientY;
       win.style.willChange = "transform";
     }, { passive: false });
 
@@ -223,12 +233,22 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       currentTop = newTop;
       pendingDx = newLeft - startLeft;
       pendingDy = newTop - startTop;
+      const now = performance.now();
+      const dt = Math.max(8, now - lastMoveTs);
+      const vx = (e.clientX - lastMoveX) / dt;
+      const vy = (e.clientY - lastMoveY) / dt;
+      const speed = Math.hypot(vx, vy);
+      const tiltRaw = pendingDx / 9 + pendingDy / 80;
+      const clamped = Math.max(-maxTilt, Math.min(maxTilt, tiltRaw));
+      targetTilt = speed < 0.02 ? 0 : clamped;
+      lastMoveTs = now;
+      lastMoveX = e.clientX;
+      lastMoveY = e.clientY;
 
       if (!raf) {
         raf = requestAnimationFrame(() => {
-          const tilt = pendingDx / 9 + pendingDy / 80;
-          const rotate = Math.max(-maxTilt, Math.min(maxTilt, tilt));
-          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${rotate}deg)`;
+          currentTilt += (targetTilt - currentTilt) * 0.25;
+          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${currentTilt}deg)`;
           raf = null;
         });
       }
