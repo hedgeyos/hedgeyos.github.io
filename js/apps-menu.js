@@ -32,6 +32,10 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
     }));
   }
 
+  function isMobilePointer(){
+    return window.matchMedia("(pointer: coarse)").matches;
+  }
+
   function openFlyout(items, anchorEl, categoryKey){
     const panel = ensureFlyout();
     panel.innerHTML = "";
@@ -121,6 +125,10 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
         e.preventDefault();
         e.stopPropagation();
         const key = toggle.getAttribute("data-category");
+        if (isMobilePointer()) {
+          openFlyout((lastByCategory[key] || []), toggle, key);
+          return;
+        }
         if (flyoutCategory === key) {
           closeFlyout();
           return;
@@ -139,6 +147,16 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
         if (!items.length) return;
         openFlyout(items, toggle, key);
       });
+
+      appsList.addEventListener("pointerenter", (e) => {
+        const toggle = e.target.closest("[data-category]");
+        if (!toggle) return;
+        const key = toggle.getAttribute("data-category");
+        if (flyoutCategory === key) return;
+        const items = (lastByCategory[key] || []);
+        if (!items.length) return;
+        openFlyout(items, toggle, key);
+      }, true);
 
       document.addEventListener("click", (e) => {
         if (!flyout) return;
