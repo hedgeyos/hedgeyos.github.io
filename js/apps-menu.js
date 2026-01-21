@@ -25,6 +25,13 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
     flyoutCategory = null;
   }
 
+  function emitOpen(appId){
+    if (!appId) return;
+    window.dispatchEvent(new CustomEvent("hedgey:open-app", {
+      detail: { appId },
+    }));
+  }
+
   function openFlyout(items, anchorEl, categoryKey){
     const panel = ensureFlyout();
     panel.innerHTML = "";
@@ -131,6 +138,21 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
         const items = (lastByCategory[key] || []);
         if (!items.length) return;
         openFlyout(items, toggle, key);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!flyout) return;
+        if (e.target.closest(".menu-flyout")) {
+          const appRow = e.target.closest("[data-app]");
+          if (appRow) {
+            emitOpen(appRow.getAttribute("data-app"));
+          }
+          closeFlyout();
+          const appsMenu = document.getElementById("appsMenu");
+          if (appsMenu) appsMenu.classList.remove("open");
+          e.stopPropagation();
+          return;
+        }
       });
 
       document.addEventListener("click", (e) => {

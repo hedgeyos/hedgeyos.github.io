@@ -35,6 +35,21 @@ async function requestFullScreen(){
 }
 
 export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
+  function openAppById(appId){
+    if (!appId) return;
+    if (appId === "localTerminal"){
+      wm.createTerminalWindow();
+    } else if (appId === "files"){
+      wm.createFilesWindow();
+    } else if (appId === "browser"){
+      wm.createBrowserWindow();
+    } else if (appId === "notes"){
+      wm.createNotesWindow();
+    } else if (defaultApps[appId]){
+      wm.createAppWindow(defaultApps[appId].title, defaultApps[appId].url);
+    }
+  }
+
   menubar.addEventListener("click", (e) => {
     const action = e.target.getAttribute("data-action");
     const app = e.target.getAttribute("data-app");
@@ -69,17 +84,7 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
       wm.createNotesWindow();
     }
 
-    if (app === "localTerminal"){
-      wm.createTerminalWindow();
-    } else if (app === "files"){
-      wm.createFilesWindow();
-    } else if (app === "browser"){
-      wm.createBrowserWindow();
-    } else if (app === "notes"){
-      wm.createNotesWindow();
-    } else if (app && defaultApps[app]){
-      wm.createAppWindow(defaultApps[app].title, defaultApps[app].url);
-    }
+    if (app) openAppById(app);
 
     if (e.target.closest("#appsMenu")){
       wm.refreshOpenWindowsMenu();
@@ -87,6 +92,12 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
     }
 
     if (action || app || savedRow) e.stopPropagation();
+  });
+
+  window.addEventListener("hedgey:open-app", (e) => {
+    const appId = e.detail?.appId;
+    if (!appId) return;
+    openAppById(appId);
   });
 
   appsMenu.renderSavedApps();
