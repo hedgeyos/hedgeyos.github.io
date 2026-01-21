@@ -872,6 +872,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         label: "BeOS",
         desc: "Warm BeOS yellow title bars and a brighter, punchier contrast.",
       },
+      hedgeyOS: {
+        label: "HedgeyOS",
+        desc: "BeOS-like tabs shifted to the bottom with soft pink and yellow accents.",
+      },
     };
 
     function applySelection(name){

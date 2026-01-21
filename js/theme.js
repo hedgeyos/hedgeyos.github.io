@@ -22,11 +22,13 @@ export function getTheme(){
 }
 
 export function applyTheme(name, { persist = true } = {}){
-  const theme = (name === "beos" || name === "system7" || name === "greenscreen" || name === "cyberpunk") ? name : "hedgey";
+  const allowed = ["beos", "system7", "greenscreen", "cyberpunk", "hedgeyOS"];
+  const theme = allowed.includes(name) ? name : "hedgey";
   document.body.classList.toggle("beos", theme === "beos");
   document.body.classList.toggle("system7", theme === "system7");
   document.body.classList.toggle("greenscreen", theme === "greenscreen");
   document.body.classList.toggle("cyberpunk", theme === "cyberpunk");
+  document.body.classList.toggle("hedgeyOS", theme === "hedgeyOS");
   if (persist) localStorage.setItem(THEME_KEY, theme);
 }
 
