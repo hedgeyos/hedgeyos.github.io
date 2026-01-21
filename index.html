@@ -226,36 +226,6 @@
     </div>
   </template>
 
-  <template id="terminalTemplate">
-    <div class="window bevel-out thick hairline" data-win>
-      <div class="titlebar bevel-out hairline" data-titlebar>
-        <div class="controls">
-          <div class="os9-box" title="Close" data-close></div>
-          <div class="os9-box" title="Minimize" data-minimize></div>
-        </div>
-        <div class="title"><span data-titletext>Terminal</span></div>
-        <div class="right">
-          <div class="os9-box" title="Zoom" data-zoom></div>
-        </div>
-      </div>
-
-      <div class="terminalwrap">
-        <div class="v86-shell">
-          <div class="v86-screen" data-v86-screen>
-            <canvas></canvas>
-            <div class="v86-text"></div>
-            <textarea class="v86-capture" data-v86-capture></textarea>
-            <div class="v86-key-overlay" data-v86-keys>Keys: (waiting)</div>
-            <button class="v86-keyboard" type="button" data-v86-keyboard>Keyboard</button>
-          </div>
-          <div class="v86-status" data-v86-status>Preparing Buildroot Linux...</div>
-        </div>
-      </div>
-
-      <div class="resize-grip" data-grip title="Resize"></div>
-    </div>
-  </template>
-
   <template id="themesTemplate">
     <div class="window bevel-out thick hairline" data-win>
       <div class="titlebar bevel-out hairline" data-titlebar>
@@ -294,7 +264,6 @@
     </div>
   </template>
 
-  <script src="vendor/v86/libv86.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -16,6 +16,6 @@
     { "id": "python", "title": "PythonCity", "url": "https://pythoncity.berrry.app/", "section": "apps" },
     { "id": "ocean", "title": "OceanBoat", "url": "https://oceanshader.berrry.app/", "section": "apps" },
     { "id": "tetris", "title": "3dTetris", "url": "https://tetris3d.berrry.app/", "section": "apps" },
-    { "id": "rss", "title": "RSS Reader", "url": "embed:rss", "section": "apps" }
+    { "id": "rss", "title": "RSS Reader", "url": "apps/rss/index.html", "section": "apps" }
   ]
 }

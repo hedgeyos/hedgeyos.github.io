@@ -60,7 +60,6 @@ async function boot(){
       appTpl: document.getElementById("appTemplate"),
       browserTpl: document.getElementById("browserTemplate"),
       notesTpl: document.getElementById("notesTemplate"),
-      terminalTpl: document.getElementById("terminalTemplate"),
       themesTpl: document.getElementById("themesTemplate"),
     },
     openWindowsList,
