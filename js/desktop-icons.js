@@ -42,6 +42,8 @@ export function createDesktopIcons({ iconLayer, desktop }){
     if (kind === "files") return "📂";
     if (kind === "notes") return "📑";
     if (kind === "note") return "📝";
+    if (kind === "browser") return "🌐";
+    if (kind === "app" && /terminal/i.test(meta?.title || "")) return "⌨️";
     if (kind === "file") {
       const type = (meta?.type || "").toLowerCase();
       const ext = (meta?.ext || "").toLowerCase();
