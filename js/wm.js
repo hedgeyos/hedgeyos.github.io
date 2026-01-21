@@ -181,6 +181,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
   function makeDraggable(id, win){
     const bar = win.querySelector("[data-titlebar]");
     let dragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
+    let currentLeft = 0, currentTop = 0;
+    let raf = null;
+    let pendingDx = 0, pendingDy = 0;
 
     win.addEventListener("pointerdown", () => focus(id), { capture: true });
 
@@ -199,6 +202,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       const dr = deskRect();
       startLeft = rect.left - dr.left;
       startTop  = rect.top - dr.top;
+      currentLeft = startLeft;
+      currentTop = startTop;
+      win.style.willChange = "transform";
     }, { passive: false });
 
     bar.addEventListener("pointermove", (e) => {
@@ -212,12 +218,30 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       const newLeft = clamp(startLeft + dx, b.minLeft, b.maxLeft);
       const newTop  = clamp(startTop + dy, b.minTop, b.maxTop);
 
-      win.style.left = newLeft + "px";
-      win.style.top  = newTop + "px";
+      currentLeft = newLeft;
+      currentTop = newTop;
+      pendingDx = newLeft - startLeft;
+      pendingDy = newTop - startTop;
+
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          const tilt = pendingDx / 9 + pendingDy / 80;
+          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${tilt}deg)`;
+          raf = null;
+        });
+      }
     }, { passive: false });
 
-    bar.addEventListener("pointerup", () => dragging = false);
-    bar.addEventListener("pointercancel", () => dragging = false);
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      win.style.left = currentLeft + "px";
+      win.style.top = currentTop + "px";
+      win.style.transform = "";
+      win.style.willChange = "";
+    };
+    bar.addEventListener("pointerup", endDrag);
+    bar.addEventListener("pointercancel", endDrag);
     bar.addEventListener("dblclick", () => toggleZoom(id));
   }
 
