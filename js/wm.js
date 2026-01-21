@@ -184,6 +184,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     let currentLeft = 0, currentTop = 0;
     let raf = null;
     let pendingDx = 0, pendingDy = 0;
+    const maxTilt = 15;
 
     win.addEventListener("pointerdown", () => focus(id), { capture: true });
 
@@ -226,7 +227,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (!raf) {
         raf = requestAnimationFrame(() => {
           const tilt = pendingDx / 9 + pendingDy / 80;
-          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${tilt}deg)`;
+          const rotate = Math.abs(tilt) > maxTilt ? 0 : tilt;
+          win.style.transform = `translate3d(${pendingDx}px, ${pendingDy}px, 0) rotate(${rotate}deg)`;
           raf = null;
         });
       }
@@ -235,6 +237,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const endDrag = () => {
       if (!dragging) return;
       dragging = false;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = null;
+      }
       win.style.left = currentLeft + "px";
       win.style.top = currentTop + "px";
       win.style.transform = "";
@@ -242,6 +248,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     };
     bar.addEventListener("pointerup", endDrag);
     bar.addEventListener("pointercancel", endDrag);
+    bar.addEventListener("lostpointercapture", endDrag);
     bar.addEventListener("dblclick", () => toggleZoom(id));
   }
 
