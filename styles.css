@@ -265,11 +265,11 @@
       pointer-events: none;
     }
     #appsDropdown{
+      max-height: none;
       overflow: visible;
     }
     #appsList{
-      max-height: min(45vh, 380px);
-      overflow: auto;
+      overflow: visible;
       padding: 2px;
     }
     .menu-sub{
