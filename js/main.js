@@ -3,6 +3,7 @@ import { createSaveDialog } from "./save-dialog.js";
 import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
 import { initMenuDropdowns, initMenuActions } from "./menubar.js";
+import { saveUpload } from "./filesystem.js";
 import { initThemeToggle, initThemeState, applyTheme, getTheme } from "./theme.js";
 import { createHud } from "./hud.js";
 
@@ -85,6 +86,27 @@ async function boot(){
 
   const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
   wm.createFilesWindow();
+
+  async function handleDroppedFiles(files){
+    const list = Array.from(files || []).filter(f => f instanceof File);
+    if (!list.length) return;
+    for (const file of list){
+      await saveUpload(file);
+    }
+    window.dispatchEvent(new Event("hedgey:docs-changed"));
+    if (typeof wm.focusDocumentsWindow === "function") {
+      wm.focusDocumentsWindow();
+    }
+  }
+
+  document.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+  document.addEventListener("drop", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleDroppedFiles(e.dataTransfer?.files);
+  });
 
   if (firstBoot){
     const pre = "HedgeyOS was made by Decentricity. Follow me on X!";
