@@ -112,10 +112,12 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
       .find(win => (win.querySelector("[data-titletext]")?.textContent || "") === "Upload");
     if (!uploadWin) return;
     const id = uploadWin.dataset.id;
-    if (id) wm.restore(id) || wm.focus(id);
     if (id) {
       const closeBtn = uploadWin.querySelector("[data-close]");
       if (closeBtn) closeBtn.click();
+    }
+    if (typeof wm.focusDocumentsWindow === "function") {
+      setTimeout(() => wm.focusDocumentsWindow(), 0);
     }
   });
 
