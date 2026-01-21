@@ -391,95 +391,159 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     <style>
       :root {
         color-scheme: light;
-        font: 14px/1.4 "Helvetica Neue", Arial, sans-serif;
+        font: 12px/1.4 "Chicago", "Geneva", "Lucida Grande", Arial, sans-serif;
+        --bg: #d9d9d9;
+        --panel: #f2f2f2;
+        --panel-dark: #cfcfcf;
+        --border: #9a9a9a;
+        --shadow: rgba(0, 0, 0, 0.15);
+        --text: #1b1b1b;
+        --muted: #6f6f6f;
+        --accent: #2f65d8;
+        --accent-ink: #ffffff;
       }
+      html, body { height: 100%; }
       body {
         margin: 0;
-        background: #f5f6f7;
-        color: #1b1b1b;
+        background: var(--bg);
+        color: var(--text);
       }
       .wrap {
         display: grid;
         grid-template-rows: auto auto 1fr;
-        min-height: 100vh;
+        min-height: 100%;
       }
       .header {
-        padding: 12px;
-        border-bottom: 1px solid #d2d6db;
-        background: #ffffff;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel);
+        box-shadow: inset 0 1px 0 #fff;
       }
       .header h1 {
         margin: 0 0 6px 0;
-        font-size: 16px;
+        font-size: 13px;
         font-weight: 700;
+        letter-spacing: 0.2px;
       }
       .feed-add {
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 8px;
+        gap: 6px;
       }
       .feed-add input {
-        padding: 8px 10px;
-        border: 1px solid #c4c8ce;
-        border-radius: 6px;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        background: #fff;
         font: inherit;
+        box-shadow: inset 0 1px 0 #fff;
       }
       .feed-add button {
-        padding: 8px 12px;
-        border: 1px solid #1c1f25;
-        background: #1c1f25;
-        color: #ffffff;
-        border-radius: 6px;
-        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        background: linear-gradient(#f6f6f6, #cfcfcf);
+        color: var(--text);
+        font-weight: 700;
         cursor: pointer;
       }
       .tabs {
         display: flex;
         gap: 6px;
-        padding: 8px 12px;
-        border-bottom: 1px solid #d2d6db;
-        background: #eef0f3;
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--border);
+        background: var(--panel-dark);
         overflow-x: auto;
       }
       .tab {
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: #ffffff;
-        border: 1px solid #cdd2d8;
+        padding: 4px 10px;
+        background: var(--panel);
+        border: 1px solid var(--border);
         cursor: pointer;
         white-space: nowrap;
-        font-size: 12px;
+        font-size: 11px;
       }
       .tab.active {
-        background: #1c1f25;
-        color: #ffffff;
-        border-color: #1c1f25;
+        background: var(--accent);
+        color: var(--accent-ink);
+        border-color: var(--accent);
       }
       .content {
-        padding: 12px;
+        padding: 10px 12px;
         overflow: auto;
+        background: #fff;
       }
       .empty {
         padding: 24px;
         text-align: center;
-        color: #6b7280;
+        color: var(--muted);
       }
       .item {
-        border-bottom: 1px solid #e0e4e8;
-        padding: 10px 0;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 8px 0;
       }
       .item h3 {
         margin: 0 0 4px 0;
-        font-size: 14px;
+        font-size: 12px;
       }
       .item a {
-        color: #1c4fd7;
+        color: var(--accent);
         text-decoration: none;
       }
       .item a:hover { text-decoration: underline; }
       .meta {
-        font-size: 11px;
-        color: #6b7280;
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      html.dark {
+        color-scheme: dark;
+        --bg: #0f1114;
+        --panel: #1b1e23;
+        --panel-dark: #14171b;
+        --border: #30343a;
+        --text: #e6e8eb;
+        --muted: #9aa1a9;
+        --accent: #6c9cff;
+        --accent-ink: #101216;
+      }
+      html.system7 {
+        --bg: #bcbcbc;
+        --panel: #e5e5e5;
+        --panel-dark: #c9c9c9;
+        --border: #8c8c8c;
+        --text: #1b1b1b;
+        --muted: #5d5d5d;
+        --accent: #2f65d8;
+        --accent-ink: #ffffff;
+      }
+      html.greenscreen {
+        --bg: #041b09;
+        --panel: #001b06;
+        --panel-dark: #001205;
+        --border: #1f6b34;
+        --text: #8dff7e;
+        --muted: #57c954;
+        --accent: #8dff7e;
+        --accent-ink: #001b06;
+      }
+      html.cyberpunk {
+        --bg: #0b0b0b;
+        --panel: #141414;
+        --panel-dark: #0f0f0f;
+        --border: #ff2b2b;
+        --text: #ff2b2b;
+        --muted: #ff7a7a;
+        --accent: #ff2b2b;
+        --accent-ink: #0b0b0b;
+      }
+      html.beos {
+        --bg: #dde7fb;
+        --panel: #f6f9ff;
+        --panel-dark: #cfdaf2;
+        --border: #8fa6d9;
+        --text: #1d2a3a;
+        --muted: #51607a;
+        --accent: #2d6cdf;
+        --accent-ink: #ffffff;
       }
     </style>
   </head>
@@ -634,8 +698,32 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         }
       });
 
+      function syncTheme(){
+        try {
+          const parentClasses = parent?.document?.body?.classList;
+          if (!parentClasses) return;
+          const themes = ["dark", "beos", "system7", "greenscreen", "cyberpunk"];
+          let next = "";
+          for (const t of themes){
+            if (parentClasses.contains(t)) {
+              next = t;
+              break;
+            }
+          }
+          document.documentElement.className = next;
+        } catch {
+          document.documentElement.className = "";
+        }
+      }
+
       loadFeeds();
+      syncTheme();
       render();
+
+      try {
+        const obs = new MutationObserver(syncTheme);
+        obs.observe(parent.document.body, { attributes: true, attributeFilter: ["class"] });
+      } catch {}
     </script>
   </body>
 </html>
