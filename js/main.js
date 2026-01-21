@@ -218,8 +218,23 @@ async function boot(){
     return null;
   }
 
+  function ensureDropShield(win){
+    if (!win) return null;
+    let shield = win.querySelector("[data-drop-shield]");
+    if (shield) return shield;
+    const wrap = win.querySelector(".appwrap, .browserwrap");
+    if (!wrap) return null;
+    shield = document.createElement("div");
+    shield.className = "drop-shield";
+    shield.textContent = "Drop to upload";
+    shield.setAttribute("data-drop-shield", "");
+    wrap.appendChild(shield);
+    return shield;
+  }
+
   function updateDropShield(x, y){
     const target = findDropTarget(x, y);
+    if (target) ensureDropShield(target);
     document.querySelectorAll("[data-drop-shield]").forEach(el => {
       el.classList.toggle("show", el.closest("[data-win]") === target);
     });
