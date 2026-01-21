@@ -956,6 +956,16 @@
       display: grid;
       grid-template-rows: 1fr 28px;
     }
+    body.hedgeyOS .window.bevel-out{
+      background: transparent;
+    }
+    body.hedgeyOS .window.bevel-out,
+    body.hedgeyOS .window.bevel-out.thick{
+      border: 0;
+    }
+    body.hedgeyOS .window.hairline{
+      outline: none;
+    }
     body.hedgeyOS .window > .titlebar{
       grid-row: 2;
     }
