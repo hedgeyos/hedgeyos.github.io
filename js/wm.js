@@ -1,7 +1,7 @@
 import { toEmbedUrl } from "./embedify.js";
 import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
-import { loadSavedApps } from "./storage.js";
+import { loadSavedApps, loadNotesFiles, getNotesFileById, getNotesFileByName, saveNotesFile } from "./storage.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
@@ -307,6 +307,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       if (r.open) tr.dataset.open = r.open;
       if (r.url) tr.dataset.url = r.url;
       if (r.title) tr.dataset.title = r.title;
+      if (r.fileId) tr.dataset.fileId = r.fileId;
       tr.innerHTML = `
         <td>${escapeHtml(r.name)}</td>
         <td>${escapeHtml(r.date)}</td>
@@ -357,11 +358,25 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       { name: "Files", date: "Just now", size: "--", kind: "system app", open: "files" },
     ]);
 
+    const docsRows = () => {
+      const files = loadNotesFiles();
+      return files
+        .map(file => ({
+          name: file.name,
+          date: new Date(file.updatedAt).toLocaleString(),
+          size: `${file.content.length} B`,
+          kind: "note",
+          open: "note",
+          fileId: file.id,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    };
+
     const emptyRows = () => ([]);
 
     const sections = {
       Applications: appRows,
-      Documents: emptyRows,
+      Documents: docsRows,
       "System Folder": systemRows,
       Desktop: emptyRows,
       Library: emptyRows,
@@ -400,6 +415,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         createTerminalWindow();
       } else if (open === "files") {
         createFilesWindow();
+      } else if (open === "note") {
+        const fileId = tr.dataset.fileId || "";
+        createNotesWindow({ fileId });
       } else if (open === "app") {
         const title = tr.dataset.title || tr.children[0].textContent || "App";
         const url = tr.dataset.url || "about:blank";
@@ -409,6 +427,12 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
     const newWinBtn = win.querySelector("[data-newwin]");
     if (newWinBtn) newWinBtn.addEventListener("click", () => createFilesWindow());
+
+    const onDocsChanged = () => {
+      const activeLabel = nav.querySelector(".navitem.active")?.textContent?.trim() || "";
+      if (/documents/i.test(activeLabel)) renderSection(activeLabel);
+    };
+    window.addEventListener("hedgey:docs-changed", onDocsChanged);
   }
 
   function wireAppUI(win, url){
@@ -483,21 +507,24 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
   function wireNotesUI(win, opts){
     const ta = win.querySelector("[data-notes]");
     const status = win.querySelector("[data-notestatus]");
+    const btnNew = win.querySelector("[data-notes-new]");
+    const btnOpen = win.querySelector("[data-notes-open]");
+    const btnSave = win.querySelector("[data-notes-save]");
+    const titleText = win.querySelector("[data-titletext]");
 
     const prefill = (opts && typeof opts.prefill === "string") ? opts.prefill : null;
     const forcePrefill = !!(opts && opts.forcePrefill);
-
-    const saved = localStorage.getItem(NOTES_KEY);
-    if (typeof saved === "string" && !forcePrefill){
-      ta.value = saved;
-    } else if (prefill !== null){
-      ta.value = prefill;
-      localStorage.setItem(NOTES_KEY, ta.value);
-    }
+    let fileId = (opts && opts.fileId) ? String(opts.fileId) : "";
+    let fileName = "";
 
     let t = null;
     function setStatus(txt){
       if (status) status.textContent = txt;
+    }
+
+    function setTitle(name){
+      if (!titleText) return;
+      titleText.textContent = name ? `Notes - ${name}` : "Notes";
     }
 
     function doSave(){
@@ -515,14 +542,99 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       t = setTimeout(doSave, 1000);
     }
 
+    if (fileId) {
+      const found = getNotesFileById(fileId);
+      if (found) {
+        ta.value = found.content || "";
+        fileName = found.name || "";
+        setTitle(fileName);
+        setStatus("Opened " + (fileName || "Notes"));
+      } else {
+        fileId = "";
+      }
+    }
+
+    if (!fileId) {
+      const saved = localStorage.getItem(NOTES_KEY);
+      if (typeof saved === "string" && !forcePrefill){
+        ta.value = saved;
+      } else if (prefill !== null){
+        ta.value = prefill;
+        localStorage.setItem(NOTES_KEY, ta.value);
+      }
+      setTitle("");
+      setStatus(saved ? "Loaded" : "Not saved yet");
+    }
+
     ta.addEventListener("input", scheduleSave);
     ta.addEventListener("blur", () => {
       if (t) { clearTimeout(t); t = null; }
       doSave();
     });
 
-    setStatus(saved ? "Loaded" : "Not saved yet");
     setTimeout(() => ta.focus(), 0);
+
+    if (btnNew) {
+      btnNew.addEventListener("click", () => {
+        fileId = "";
+        fileName = "";
+        ta.value = "";
+        localStorage.setItem(NOTES_KEY, "");
+        setTitle("");
+        setStatus("New file");
+        ta.focus();
+      });
+    }
+
+    if (btnOpen) {
+      btnOpen.addEventListener("click", () => {
+        const files = loadNotesFiles();
+        if (!files.length) {
+          setStatus("No saved notes yet");
+          return;
+        }
+        const listing = files.map((f, i) => `${i + 1}. ${f.name}`).join("\n");
+        const choice = window.prompt(`Open which file?\n${listing}`, "");
+        if (!choice) return;
+        let selected = null;
+        const idx = parseInt(choice, 10);
+        if (!Number.isNaN(idx) && idx >= 1 && idx <= files.length) {
+          selected = files[idx - 1];
+        } else {
+          selected = getNotesFileByName(choice);
+        }
+        if (!selected) {
+          setStatus("File not found");
+          return;
+        }
+        fileId = selected.id;
+        fileName = selected.name;
+        ta.value = selected.content || "";
+        setTitle(fileName);
+        setStatus("Opened " + fileName);
+        ta.focus();
+      });
+    }
+
+    if (btnSave) {
+      btnSave.addEventListener("click", () => {
+        let name = fileName;
+        if (!name) {
+          name = window.prompt("Name this note:", "Untitled");
+          if (!name) return;
+        }
+        const savedFile = saveNotesFile({ id: fileId || null, name, content: ta.value });
+        if (!savedFile) {
+          setStatus("Save canceled");
+          return;
+        }
+        fileId = savedFile.id;
+        fileName = savedFile.name;
+        setTitle(fileName);
+        setStatus("Saved " + fileName);
+        window.dispatchEvent(new Event("hedgey:docs-changed"));
+      });
+    }
   }
 
 

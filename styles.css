@@ -1135,6 +1135,11 @@
       background: linear-gradient(var(--chrome-top), var(--chrome-bot));
       flex-wrap: wrap;
     }
+    .notes-actions{
+      display: inline-flex;
+      gap: 6px;
+      margin-left: auto;
+    }
     .notehint{
       opacity: 0.85;
       white-space: nowrap;
