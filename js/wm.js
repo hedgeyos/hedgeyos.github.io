@@ -124,7 +124,8 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
   function applyDefaultSize(win){
     const { w: dw, h: dh } = deskSize();
-    const w = Math.max(320, Math.floor(dw * 0.8));
+    const isDesktop = dw >= 900;
+    const w = Math.max(320, Math.floor(dw * (isDesktop ? 0.45 : 0.8)));
     const h = Math.max(240, Math.floor(dh * 0.5));
     win.style.width = w + "px";
     win.style.height = h + "px";
@@ -438,6 +439,10 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
           ]);
           const hasExt = name.includes(".");
           const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
+          const previewExts = new Set([
+            "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
+          ]);
+          const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
           if (isHtml && file.blob) {
             const url = URL.createObjectURL(file.blob);
             createAppWindow(name, url);
@@ -451,6 +456,12 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
             } catch {
               downloadFile(fileId);
             }
+            return;
+          }
+          if (isPreviewable && file.blob) {
+            const url = URL.createObjectURL(file.blob);
+            createAppWindow(name, url);
+            setTimeout(() => URL.revokeObjectURL(url), 20000);
             return;
           }
           downloadFile(fileId);
