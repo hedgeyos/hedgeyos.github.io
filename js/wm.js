@@ -881,6 +881,53 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     return spawn(notesTpl, "Notes", { kind: "notes", notesOpts: notesOpts || null });
   }
 
+  async function openFileById(fileId){
+    if (!fileId) return;
+    const payload = await readFileBlob(fileId);
+    if (!payload || !payload.record) return;
+    const { record: file, blob } = payload;
+    if (file.kind === "note") {
+      createNotesWindow({ fileId: file.id });
+      return;
+    }
+    const name = file.name || "File";
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    const type = (file.type || "").toLowerCase();
+    const isHtml = type.includes("text/html") || ext === "html" || ext === "htm";
+    const textExts = new Set([
+      "txt","md","markdown","mdx","sh","bash","zsh","log","csv","tsv","json","yaml","yml","ini","conf","env","toml","lock",
+      "xml","svg","css","js","ts","tsx","jsx","py","rb","go","rs","php","java","c","cpp","h","hpp","bat","cmd"
+    ]);
+    const hasExt = name.includes(".");
+    const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
+    const previewExts = new Set([
+      "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
+    ]);
+    const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
+    if (isHtml && blob) {
+      const url = URL.createObjectURL(blob);
+      createAppWindow(name, url);
+      setTimeout(() => URL.revokeObjectURL(url), 20000);
+      return;
+    }
+    if (isText && blob) {
+      try{
+        const text = await blob.text();
+        createNotesWindow({ prefill: text, forcePrefill: true });
+      } catch {
+        downloadFile(fileId);
+      }
+      return;
+    }
+    if (isPreviewable && blob) {
+      const url = URL.createObjectURL(blob);
+      createAppWindow(name, url);
+      setTimeout(() => URL.revokeObjectURL(url), 20000);
+      return;
+    }
+    downloadFile(fileId);
+  }
+
   function activateDocuments(filesWinId){
     const st = state.get(filesWinId);
     if (!st || !st.win) return false;
@@ -931,49 +978,3 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     restore,
   };
 }
-  async function openFileById(fileId){
-    if (!fileId) return;
-    const payload = await readFileBlob(fileId);
-    if (!payload || !payload.record) return;
-    const { record: file, blob } = payload;
-    if (file.kind === "note") {
-      createNotesWindow({ fileId: file.id });
-      return;
-    }
-    const name = file.name || "File";
-    const ext = (name.split(".").pop() || "").toLowerCase();
-    const type = (file.type || "").toLowerCase();
-    const isHtml = type.includes("text/html") || ext === "html" || ext === "htm";
-    const textExts = new Set([
-      "txt","md","markdown","mdx","sh","bash","zsh","log","csv","tsv","json","yaml","yml","ini","conf","env","toml","lock",
-      "xml","svg","css","js","ts","tsx","jsx","py","rb","go","rs","php","java","c","cpp","h","hpp","bat","cmd"
-    ]);
-    const hasExt = name.includes(".");
-    const isText = type.startsWith("text/") || textExts.has(ext) || !hasExt;
-    const previewExts = new Set([
-      "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
-    ]);
-    const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
-    if (isHtml && blob) {
-      const url = URL.createObjectURL(blob);
-      createAppWindow(name, url);
-      setTimeout(() => URL.revokeObjectURL(url), 20000);
-      return;
-    }
-    if (isText && blob) {
-      try{
-        const text = await blob.text();
-        createNotesWindow({ prefill: text, forcePrefill: true });
-      } catch {
-        downloadFile(fileId);
-      }
-      return;
-    }
-    if (isPreviewable && blob) {
-      const url = URL.createObjectURL(blob);
-      createAppWindow(name, url);
-      setTimeout(() => URL.revokeObjectURL(url), 20000);
-      return;
-    }
-    downloadFile(fileId);
-  }
