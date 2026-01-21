@@ -257,6 +257,10 @@
       z-index: 9999;
       user-select: none;
     }
+    body.hedgeyOS .menubar{
+      top: auto;
+      bottom: 0;
+    }
 
     .menu{
       position: relative;
@@ -287,6 +291,10 @@
       background: var(--os-face);
       z-index: 10000;
       color: var(--os-black);
+    }
+    body.hedgeyOS .menu > .menu-dropdown{
+      top: auto;
+      bottom: calc(var(--menubar-h) - 2px);
     }
     .menu.open .menu-dropdown{ display: block; }
 
@@ -372,6 +380,10 @@
       display: none;
       max-width: min(320px, 80vw);
     }
+    body.hedgeyOS .toast{
+      top: auto;
+      bottom: calc(var(--menubar-h) + 8px);
+    }
     .toast.show{ display: block; }
     .toast-body{
       padding: 8px 10px;
@@ -423,6 +435,10 @@
       touch-action: none;
       z-index: 2;
     }
+    body.hedgeyOS .desktop{
+      top: 0;
+      bottom: var(--menubar-h);
+    }
     .hud-feed{
       position: fixed;
       inset: var(--menubar-h) 0 0 0;
@@ -433,6 +449,10 @@
       z-index: 1;
       background: #000;
       pointer-events: none;
+    }
+    body.hedgeyOS .hud-feed{
+      inset: 0 0 var(--menubar-h) 0;
+      height: calc(100% - var(--menubar-h));
     }
     body.hud-on .hud-feed{
       display: block;
