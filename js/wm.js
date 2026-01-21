@@ -645,7 +645,13 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       });
     });
 
-    setUrl(field.value);
+    const defaultHome = location.origin + "/apps/browser-home/index.html";
+    if (!field.value || field.value === "about:blank") {
+      field.value = defaultHome;
+      setUrl(defaultHome);
+    } else {
+      setUrl(field.value);
+    }
   }
 
   function wireNotesUI(win, opts){
