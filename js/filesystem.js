@@ -2,10 +2,13 @@ const DB_NAME = "hedgeyfs";
 const DB_VERSION = 2;
 const STORE = "files";
 const META = "meta";
-const KEY_NAME = "cryptoKey";
+const KEY_NAME = "cryptoKeyWrapped";
 const NOTICE_KEY = "hedgey_encryption_notice_v1";
 
 let dbPromise = null;
+let cachedKey = null;
+let unlockWait = null;
+let unlockResolve = null;
 
 function openDb(){
   if (dbPromise) return dbPromise;
@@ -80,15 +83,89 @@ function b64ToBytes(str){
   return bytes;
 }
 
-async function getCryptoKey(){
-  const existing = await withMeta("readonly", store => store.get(KEY_NAME));
-  if (existing && existing.jwk){
-    return crypto.subtle.importKey("jwk", existing.jwk, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+function ensureUnlockPromise(){
+  if (!unlockWait) {
+    unlockWait = new Promise((resolve) => { unlockResolve = resolve; });
   }
+  return unlockWait;
+}
+
+async function getCryptoKey(){
+  if (cachedKey) return cachedKey;
+  const existing = await withMeta("readonly", store => store.get(KEY_NAME));
+  if (!existing || !existing.wrapped) {
+    return ensureUnlockPromise();
+  }
+  return ensureUnlockPromise();
+}
+
+async function deriveKey(passphrase, saltB64, iterations){
+  const enc = new TextEncoder();
+  const material = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(passphrase || ""),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  const salt = b64ToBytes(saltB64);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    material,
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["wrapKey", "unwrapKey"]
+  );
+}
+
+async function storeWrappedKey(wrapped, saltB64, iterations, wrapIvB64){
+  await withMeta("readwrite", store => store.put({
+    id: KEY_NAME,
+    wrapped,
+    salt: saltB64,
+    iterations,
+    wrapIv: wrapIvB64,
+  }));
+}
+
+export async function hasWrappedKey(){
+  const existing = await withMeta("readonly", store => store.get(KEY_NAME));
+  return !!(existing && existing.wrapped);
+}
+
+export async function setPassphrase(passphrase){
   const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-  const jwk = await crypto.subtle.exportKey("jwk", key);
-  await withMeta("readwrite", store => store.put({ id: KEY_NAME, jwk }));
-  return key;
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const saltB64 = bytesToB64(salt);
+  const iterations = 250000;
+  const wrapKey = await deriveKey(passphrase, saltB64, iterations);
+  const wrapIv = crypto.getRandomValues(new Uint8Array(12));
+  const wrapped = await crypto.subtle.wrapKey("jwk", key, wrapKey, { name: "AES-GCM", iv: wrapIv });
+  await storeWrappedKey(bytesToB64(new Uint8Array(wrapped)), saltB64, iterations, bytesToB64(wrapIv));
+  cachedKey = key;
+  if (unlockResolve) unlockResolve(key);
+  return true;
+}
+
+export async function unlockWithPassphrase(passphrase){
+  const existing = await withMeta("readonly", store => store.get(KEY_NAME));
+  if (!existing || !existing.wrapped || !existing.wrapIv) return false;
+  const wrapKey = await deriveKey(passphrase, existing.salt, existing.iterations);
+  const wrappedBytes = b64ToBytes(existing.wrapped);
+  const wrappedBuf = wrappedBytes.buffer.slice(wrappedBytes.byteOffset, wrappedBytes.byteOffset + wrappedBytes.byteLength);
+  const iv = b64ToBytes(existing.wrapIv);
+  const key = await crypto.subtle.unwrapKey(
+    "jwk",
+    wrappedBuf,
+    wrapKey,
+    { name: "AES-GCM", iv },
+    { name: "AES-GCM" },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  cachedKey = key;
+  if (unlockResolve) unlockResolve(key);
+  return true;
 }
 
 function emitEncryptionNotice(){

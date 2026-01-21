@@ -1226,6 +1226,14 @@
       display: grid;
       gap: 10px;
     }
+    #keyError{
+      color: #a10000;
+      min-height: 1em;
+    }
+    body.greenscreen #keyError,
+    body.cyberpunk #keyError{
+      color: inherit;
+    }
     .openlist{
       border: 1px solid var(--os-shadow);
       background: var(--os-face2);

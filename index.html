@@ -102,6 +102,27 @@
     </div>
   </div>
 
+  <div class="modal" id="keyModal" aria-hidden="true">
+    <div class="dialog bevel-out thick hairline">
+      <div class="dtitle" id="keyTitle">Unlock Encryption</div>
+      <div class="dcontent">
+        <div id="keyDesc">Enter your passphrase to unlock encrypted files.</div>
+        <div class="formrow">
+          <div class="label">Passphrase:</div>
+          <input class="field" id="keyPass1" type="password" value="" />
+        </div>
+        <div class="formrow" id="keyPassRow2">
+          <div class="label">Confirm:</div>
+          <input class="field" id="keyPass2" type="password" value="" />
+        </div>
+        <div class="notehint" id="keyError"></div>
+      </div>
+      <div class="dactions">
+        <button class="btn" id="keyConfirm">Continue</button>
+      </div>
+    </div>
+  </div>
+
   <template id="finderTemplate">
     <div class="window bevel-out thick hairline" data-win>
       <div class="titlebar bevel-out hairline" data-titlebar>

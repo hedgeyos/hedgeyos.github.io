@@ -3,7 +3,7 @@ import { createSaveDialog } from "./save-dialog.js";
 import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
 import { initMenuDropdowns, initMenuActions } from "./menubar.js";
-import { saveUpload } from "./filesystem.js";
+import { saveUpload, hasWrappedKey, setPassphrase, unlockWithPassphrase } from "./filesystem.js";
 import { initThemeToggle, initThemeState, applyTheme, getTheme } from "./theme.js";
 import { createHud } from "./hud.js";
 
@@ -107,6 +107,57 @@ async function boot(){
       // Placeholder for future key management UI.
     });
   }
+
+  const keyModal = document.getElementById("keyModal");
+  const keyTitle = document.getElementById("keyTitle");
+  const keyDesc = document.getElementById("keyDesc");
+  const keyPass1 = document.getElementById("keyPass1");
+  const keyPass2 = document.getElementById("keyPass2");
+  const keyPassRow2 = document.getElementById("keyPassRow2");
+  const keyError = document.getElementById("keyError");
+  const keyConfirm = document.getElementById("keyConfirm");
+
+  async function openKeyModal(){
+    if (!keyModal) return;
+    const wrapped = await hasWrappedKey();
+    keyTitle.textContent = wrapped ? "Unlock Encryption" : "Set Passphrase";
+    keyDesc.textContent = wrapped
+      ? "Enter your passphrase to unlock encrypted files."
+      : "Create a passphrase to protect your files.";
+    if (keyPassRow2) keyPassRow2.style.display = wrapped ? "none" : "grid";
+    if (keyError) keyError.textContent = "";
+    if (keyPass1) keyPass1.value = "";
+    if (keyPass2) keyPass2.value = "";
+    keyModal.classList.add("open");
+    keyModal.setAttribute("aria-hidden", "false");
+    setTimeout(() => keyPass1?.focus(), 0);
+
+    keyConfirm.onclick = async () => {
+      const p1 = (keyPass1?.value || "").trim();
+      const p2 = (keyPass2?.value || "").trim();
+      if (!p1) {
+        if (keyError) keyError.textContent = "Passphrase required.";
+        return;
+      }
+      if (!wrapped && p1 !== p2) {
+        if (keyError) keyError.textContent = "Passphrases do not match.";
+        return;
+      }
+      try {
+        const ok = wrapped ? await unlockWithPassphrase(p1) : await setPassphrase(p1);
+        if (!ok) {
+          if (keyError) keyError.textContent = "Could not unlock. Try again.";
+          return;
+        }
+        keyModal.classList.remove("open");
+        keyModal.setAttribute("aria-hidden", "true");
+      } catch {
+        if (keyError) keyError.textContent = "Could not unlock. Try again.";
+      }
+    };
+  }
+
+  openKeyModal();
 
   async function handleDroppedFiles(files){
     const list = Array.from(files || []).filter(f => f instanceof File);
