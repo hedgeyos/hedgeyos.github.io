@@ -117,9 +117,10 @@ async function boot(){
   const keyError = document.getElementById("keyError");
   const keyConfirm = document.getElementById("keyConfirm");
 
-  async function openKeyModal(){
+  async function openKeyModal(force){
     if (!keyModal) return;
     const wrapped = await hasWrappedKey();
+    if (!wrapped && !force) return;
     keyTitle.textContent = wrapped ? "Unlock Encryption" : "Set Passphrase";
     keyDesc.textContent = wrapped
       ? "Enter your passphrase to unlock encrypted files."
@@ -157,7 +158,7 @@ async function boot(){
     };
   }
 
-  openKeyModal();
+  openKeyModal(false);
 
   async function handleDroppedFiles(files){
     const list = Array.from(files || []).filter(f => f instanceof File);

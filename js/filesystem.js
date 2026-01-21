@@ -93,10 +93,20 @@ function ensureUnlockPromise(){
 async function getCryptoKey(){
   if (cachedKey) return cachedKey;
   const existing = await withMeta("readonly", store => store.get(KEY_NAME));
-  if (!existing || !existing.wrapped) {
+  if (existing && existing.jwk) {
+    cachedKey = await crypto.subtle.importKey("jwk", existing.jwk, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+    return cachedKey;
+  }
+  if (existing && existing.wrapped) {
     return ensureUnlockPromise();
   }
-  return ensureUnlockPromise();
+  // First load: generate and store unwrapped key.
+  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+  const jwk = await crypto.subtle.exportKey("jwk", key);
+  await withMeta("readwrite", store => store.put({ id: KEY_NAME, jwk }));
+  cachedKey = key;
+  if (unlockResolve) unlockResolve(key);
+  return key;
 }
 
 async function deriveKey(passphrase, saltB64, iterations){
@@ -133,8 +143,18 @@ export async function hasWrappedKey(){
   return !!(existing && existing.wrapped);
 }
 
+async function getOrCreateRawKey(){
+  if (cachedKey) return cachedKey;
+  const existing = await withMeta("readonly", store => store.get(KEY_NAME));
+  if (existing && existing.jwk) {
+    cachedKey = await crypto.subtle.importKey("jwk", existing.jwk, { name: "AES-GCM" }, true, ["encrypt", "decrypt"]);
+    return cachedKey;
+  }
+  return getCryptoKey();
+}
+
 export async function setPassphrase(passphrase){
-  const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+  const key = await getOrCreateRawKey();
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const saltB64 = bytesToB64(salt);
   const iterations = 250000;
