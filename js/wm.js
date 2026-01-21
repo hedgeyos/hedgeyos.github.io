@@ -588,14 +588,18 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const field = win.querySelector("[data-urlfield]");
     const goBtn = win.querySelector("[data-go]");
     const saveBtn = win.querySelector("[data-save]");
+    const backBtn = win.querySelector("[data-back]");
     const iframe = win.querySelector("[data-iframe]");
     const status = win.querySelector("[data-browser-status]");
+    const historyStack = [];
+    let historyIndex = -1;
+    let suppressHistory = false;
 
     function setStatus(txt){
       if (status) status.textContent = txt;
     }
 
-    function setUrl(u){
+    function setUrl(u, opts){
       const raw = (u || "").trim();
       if (!raw){
         setStatus("Enter a URL");
@@ -617,6 +621,14 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
           setStatus("Opened direct URL (no embed)");
         }
       }
+      if (!opts?.noHistory) {
+        const val = field.value;
+        if (!suppressHistory && val) {
+          historyStack.splice(historyIndex + 1);
+          historyStack.push(val);
+          historyIndex = historyStack.length - 1;
+        }
+      }
     }
 
     goBtn.addEventListener("click", () => setUrl(field.value));
@@ -626,6 +638,18 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
         setUrl(field.value);
       }
     });
+    field.addEventListener("focus", () => field.select());
+    field.addEventListener("click", () => field.select());
+
+    if (backBtn) {
+      backBtn.addEventListener("click", () => {
+        if (historyIndex <= 0) return;
+        historyIndex -= 1;
+        suppressHistory = true;
+        setUrl(historyStack[historyIndex], { noHistory: true });
+        suppressHistory = false;
+      });
+    }
 
     saveBtn.addEventListener("click", () => {
       const current = (iframe.getAttribute("src") || field.value || "").trim();
