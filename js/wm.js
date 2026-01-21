@@ -511,11 +511,16 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     const btnOpen = win.querySelector("[data-notes-open]");
     const btnSave = win.querySelector("[data-notes-save]");
     const titleText = win.querySelector("[data-titletext]");
+    const openModal = document.getElementById("notesOpenModal");
+    const openList = document.getElementById("notesOpenList");
+    const openCancel = document.getElementById("notesOpenCancel");
+    const openConfirm = document.getElementById("notesOpenConfirm");
 
     const prefill = (opts && typeof opts.prefill === "string") ? opts.prefill : null;
     const forcePrefill = !!(opts && opts.forcePrefill);
     let fileId = (opts && opts.fileId) ? String(opts.fileId) : "";
     let fileName = "";
+    let pendingOpenId = "";
 
     let t = null;
     function setStatus(txt){
@@ -588,31 +593,57 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
 
     if (btnOpen) {
       btnOpen.addEventListener("click", () => {
+        if (!openModal || !openList || !openCancel || !openConfirm) {
+          setStatus("Open dialog not available");
+          return;
+        }
         const files = loadNotesFiles();
         if (!files.length) {
           setStatus("No saved notes yet");
           return;
         }
-        const listing = files.map((f, i) => `${i + 1}. ${f.name}`).join("\n");
-        const choice = window.prompt(`Open which file?\n${listing}`, "");
-        if (!choice) return;
-        let selected = null;
-        const idx = parseInt(choice, 10);
-        if (!Number.isNaN(idx) && idx >= 1 && idx <= files.length) {
-          selected = files[idx - 1];
-        } else {
-          selected = getNotesFileByName(choice);
-        }
-        if (!selected) {
-          setStatus("File not found");
-          return;
-        }
-        fileId = selected.id;
-        fileName = selected.name;
-        ta.value = selected.content || "";
-        setTitle(fileName);
-        setStatus("Opened " + fileName);
-        ta.focus();
+        pendingOpenId = "";
+        openList.innerHTML = "";
+        files.forEach((file, idx) => {
+          const row = document.createElement("div");
+          row.className = "openitem" + (idx === 0 ? " selected" : "");
+          row.textContent = file.name;
+          row.dataset.id = file.id;
+          openList.appendChild(row);
+          if (idx === 0) pendingOpenId = file.id;
+        });
+        openList.querySelectorAll(".openitem").forEach(row => {
+          row.addEventListener("click", () => {
+            openList.querySelectorAll(".openitem").forEach(r => r.classList.remove("selected"));
+            row.classList.add("selected");
+            pendingOpenId = row.dataset.id || "";
+          });
+          row.addEventListener("dblclick", () => {
+            pendingOpenId = row.dataset.id || "";
+            openConfirm.click();
+          });
+        });
+        openCancel.onclick = () => {
+          openModal.classList.remove("open");
+          openModal.setAttribute("aria-hidden", "true");
+        };
+        openConfirm.onclick = () => {
+          const selected = pendingOpenId ? getNotesFileById(pendingOpenId) : null;
+          if (!selected) {
+            setStatus("File not found");
+            return;
+          }
+          fileId = selected.id;
+          fileName = selected.name;
+          ta.value = selected.content || "";
+          setTitle(fileName);
+          setStatus("Opened " + fileName);
+          openModal.classList.remove("open");
+          openModal.setAttribute("aria-hidden", "true");
+          ta.focus();
+        };
+        openModal.classList.add("open");
+        openModal.setAttribute("aria-hidden", "false");
       });
     }
 

@@ -1191,6 +1191,22 @@
       display: grid;
       gap: 10px;
     }
+    .openlist{
+      border: 1px solid var(--os-shadow);
+      background: var(--os-face2);
+      max-height: 220px;
+      overflow: auto;
+    }
+    .openitem{
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--os-shadow);
+      cursor: default;
+    }
+    .openitem:last-child{ border-bottom: 0; }
+    .openitem.selected{
+      background: var(--os-blue);
+      color: #fff;
+    }
 
     /* ===== Themes window ===== */
     .themeswrap{
