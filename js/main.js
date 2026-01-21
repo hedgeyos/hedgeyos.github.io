@@ -125,6 +125,8 @@ async function boot(){
   const keyPassRow2 = document.getElementById("keyPassRow2");
   const keyError = document.getElementById("keyError");
   const keyConfirm = document.getElementById("keyConfirm");
+  const keyKeep = document.getElementById("keyKeep");
+  const keyInfo = document.getElementById("keyInfo");
 
   async function openKeyModal(force){
     if (!keyModal) return;
@@ -134,6 +136,7 @@ async function boot(){
     keyDesc.textContent = wrapped
       ? "Enter your passphrase to unlock encrypted files."
       : "Create a passphrase to protect your files.";
+    if (keyInfo) keyInfo.style.display = wrapped ? "none" : "block";
     if (keyPassRow2) keyPassRow2.style.display = wrapped ? "none" : "grid";
     if (keyError) keyError.textContent = "";
     if (keyPass1) keyPass1.value = "";
@@ -165,6 +168,14 @@ async function boot(){
         if (keyError) keyError.textContent = "Could not unlock. Try again.";
       }
     };
+
+    if (keyKeep) {
+      keyKeep.style.display = wrapped ? "none" : "inline-flex";
+      keyKeep.onclick = () => {
+        keyModal.classList.remove("open");
+        keyModal.setAttribute("aria-hidden", "true");
+      };
+    }
   }
 
   openKeyModal(false);

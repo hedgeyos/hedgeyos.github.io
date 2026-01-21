@@ -1226,6 +1226,17 @@
       display: grid;
       gap: 10px;
     }
+    .key-hero{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6px 0 0;
+    }
+    .key-hero img{
+      width: 72px;
+      height: auto;
+      image-rendering: auto;
+    }
     #keyError{
       color: #a10000;
       min-height: 1em;
