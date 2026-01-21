@@ -1113,6 +1113,7 @@
       background: var(--os-face2);
       overflow: hidden;
       min-height: 0;
+      position: relative;
     }
     iframe.appframe{
       width: 100%;
@@ -1120,6 +1121,27 @@
       border: 0;
       display: block;
       background: #fff;
+    }
+    .drop-shield{
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.2);
+      color: var(--os-black);
+      font: 14px/1.2 "Chicago", "Charcoal", "MS Sans Serif", sans-serif;
+      z-index: 5;
+      pointer-events: auto;
+    }
+    .drop-shield.show{ display: flex; }
+    body.greenscreen .drop-shield{
+      background: rgba(0,0,0,0.6);
+      color: #00ff66;
+    }
+    body.cyberpunk .drop-shield{
+      background: rgba(0,0,0,0.4);
+      color: #ff3b30;
     }
 
     /* ===== Browser UI ===== */
@@ -1129,6 +1151,7 @@
       display: grid;
       grid-template-rows: auto 1fr auto;
       min-height: 0;
+      position: relative;
     }
     .browserbar{
       display:flex;

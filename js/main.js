@@ -199,12 +199,50 @@ async function boot(){
     }
   }
 
+  let dragDepth = 0;
+
+  function findDropTarget(x, y){
+    const wins = Array.from(document.querySelectorAll("[data-win]"))
+      .filter(win => ["app", "browser"].includes(win.dataset.kind || ""))
+      .sort((a, b) => {
+        const za = parseInt(a.style.zIndex || "0", 10);
+        const zb = parseInt(b.style.zIndex || "0", 10);
+        return zb - za;
+      });
+    for (const win of wins){
+      const rect = win.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        return win;
+      }
+    }
+    return null;
+  }
+
+  function updateDropShield(x, y){
+    const target = findDropTarget(x, y);
+    document.querySelectorAll("[data-drop-shield]").forEach(el => {
+      el.classList.toggle("show", el.closest("[data-win]") === target);
+    });
+  }
+
+  document.addEventListener("dragenter", (e) => {
+    dragDepth += 1;
+  });
   document.addEventListener("dragover", (e) => {
     e.preventDefault();
+    updateDropShield(e.clientX, e.clientY);
+  });
+  document.addEventListener("dragleave", () => {
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) {
+      document.querySelectorAll("[data-drop-shield]").forEach(el => el.classList.remove("show"));
+    }
   });
   document.addEventListener("drop", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    dragDepth = 0;
+    document.querySelectorAll("[data-drop-shield]").forEach(el => el.classList.remove("show"));
     handleDroppedFiles(e.dataTransfer?.files);
   });
 
