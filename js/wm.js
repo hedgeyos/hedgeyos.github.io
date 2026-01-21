@@ -2,7 +2,7 @@ import { toEmbedUrl } from "./embedify.js";
 import { NOTES_KEY } from "./constants.js";
 import { createDesktopIcons } from "./desktop-icons.js";
 import { loadSavedApps } from "./storage.js";
-import { listFiles, listNotes, getFileById, saveNote, downloadFile } from "./filesystem.js";
+import { listFiles, listNotes, getFileById, readNoteText, readFileBlob, saveNote, downloadFile } from "./filesystem.js";
 
 export function createWindowManager({ desktop, iconLayer, templates, openWindowsList, saveDialog, appsMenu, appsMap, theme }){
   const { finderTpl, appTpl, browserTpl, notesTpl, themesTpl } = templates;
@@ -431,8 +431,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       } else if (open === "download") {
         const fileId = tr.dataset.fileId || "";
         if (!fileId) return;
-        getFileById(fileId).then(async (file) => {
-          if (!file) return;
+        readFileBlob(fileId).then(async (payload) => {
+          if (!payload || !payload.record) return;
+          const { record: file, blob } = payload;
           if (file.kind === "note") {
             createNotesWindow({ fileId: file.id });
             return;
@@ -451,23 +452,23 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
             "png","jpg","jpeg","gif","webp","bmp","svg","mp4","webm","mov","mp3","wav","ogg","pdf"
           ]);
           const isPreviewable = type.startsWith("image/") || type.startsWith("video/") || type.startsWith("audio/") || type === "application/pdf" || previewExts.has(ext);
-          if (isHtml && file.blob) {
-            const url = URL.createObjectURL(file.blob);
+          if (isHtml && blob) {
+            const url = URL.createObjectURL(blob);
             createAppWindow(name, url);
             setTimeout(() => URL.revokeObjectURL(url), 20000);
             return;
           }
-          if (isText && file.blob) {
+          if (isText && blob) {
             try{
-              const text = await file.blob.text();
+              const text = await blob.text();
               createNotesWindow({ prefill: text, forcePrefill: true });
             } catch {
               downloadFile(fileId);
             }
             return;
           }
-          if (isPreviewable && file.blob) {
-            const url = URL.createObjectURL(file.blob);
+          if (isPreviewable && blob) {
+            const url = URL.createObjectURL(blob);
             createAppWindow(name, url);
             setTimeout(() => URL.revokeObjectURL(url), 20000);
             return;
@@ -608,9 +609,9 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     }
 
     if (fileId) {
-      getFileById(fileId).then((found) => {
-        if (found && found.kind === "note") {
-          ta.value = found.content || "";
+      Promise.all([getFileById(fileId), readNoteText(fileId)]).then(([found, text]) => {
+        if (found && found.kind === "note" && typeof text === "string") {
+          ta.value = text;
           fileName = found.name || "";
           setTitle(fileName);
           setStatus("Opened " + (fileName || "Notes"));
@@ -689,14 +690,15 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
           openModal.setAttribute("aria-hidden", "true");
         };
         openConfirm.onclick = async () => {
-          const selected = pendingOpenId ? await getFileById(pendingOpenId) : null;
-          if (!selected || selected.kind !== "note") {
+          const selected = pendingOpenId ? files.find(f => f.id === pendingOpenId) : null;
+          const text = pendingOpenId ? await readNoteText(pendingOpenId) : null;
+          if (!selected || typeof text !== "string") {
             setStatus("File not found");
             return;
           }
           fileId = selected.id;
           fileName = selected.name;
-          ta.value = selected.content || "";
+          ta.value = text || "";
           setTitle(fileName);
           setStatus("Opened " + fileName);
           openModal.classList.remove("open");

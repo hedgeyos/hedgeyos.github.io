@@ -87,6 +87,27 @@ async function boot(){
   const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
   wm.createFilesWindow();
 
+  const toast = document.getElementById("toast");
+  const toastBody = document.getElementById("toastBody");
+  let toastTimer = null;
+  function showToast(message){
+    if (!toast || !toastBody) return;
+    toastBody.innerHTML = message;
+    toast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("show"), 8000);
+  }
+
+  window.addEventListener("hedgey:encryption-notice", () => {
+    showToast('Your files are encrypted. <span class="toast-link">Click here for key operations.</span>');
+  });
+
+  if (toast) {
+    toast.addEventListener("click", () => {
+      // Placeholder for future key management UI.
+    });
+  }
+
   async function handleDroppedFiles(files){
     const list = Array.from(files || []).filter(f => f instanceof File);
     if (!list.length) return;

@@ -311,6 +311,41 @@
       user-select: none;
       color: var(--os-black);
     }
+
+    /* ===== Toast ===== */
+    .toast{
+      position: fixed;
+      top: calc(var(--menubar-h) + 8px);
+      right: 10px;
+      z-index: 12000;
+      display: none;
+      max-width: min(320px, 80vw);
+    }
+    .toast.show{ display: block; }
+    .toast-body{
+      padding: 8px 10px;
+      border: 1px solid var(--os-shadow);
+      background: var(--os-face);
+      color: var(--os-black);
+      font: 12px/1.4 "Chicago", "Charcoal", "MS Sans Serif", sans-serif;
+      box-shadow: 1px 1px 0 var(--os-dark);
+    }
+    .toast-link{
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    body.greenscreen .toast-body{
+      background: #000000;
+      color: #00ff66;
+      border-color: #00ff66;
+      box-shadow: none;
+    }
+    body.cyberpunk .toast-body{
+      background: rgba(0,0,0,0.1);
+      color: #ff3b30;
+      border-color: #ff3b30;
+      box-shadow: none;
+    }
     .hudbtn{
       display: none;
     }
