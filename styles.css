@@ -272,10 +272,6 @@
       overflow: visible;
       padding: 2px;
     }
-    .menu-sub{
-      position: relative;
-      width: 100%;
-    }
     .menu-subtitle{
       width: 100%;
       display: flex;
@@ -287,19 +283,11 @@
       opacity: 0.6;
       margin-left: 10px;
     }
-    .menu-sub .menu-dropdown{
-      display: none;
-      position: absolute;
-      top: 0;
-      left: 100%;
+    .menu-flyout{
       min-width: 220px;
       max-height: min(50vh, 420px);
       overflow: auto;
       z-index: 10010;
-    }
-    .menu-sub.open > .menu-dropdown,
-    .menu-sub:hover > .menu-dropdown{
-      display: block;
     }
 
     .menubar-spacer{ flex: 1; }
