@@ -4,6 +4,7 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
   let submenuBound = false;
   let flyout = null;
   let flyoutCategory = null;
+  let flyoutOpenedAt = 0;
 
   function clearNode(node){
     while (node.firstChild) node.removeChild(node.firstChild);
@@ -23,6 +24,7 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
     flyout.style.display = "none";
     flyout.innerHTML = "";
     flyoutCategory = null;
+    flyoutOpenedAt = 0;
   }
 
   function emitOpen(appId){
@@ -52,6 +54,7 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
     panel.style.position = "fixed";
     panel.style.left = "0px";
     panel.style.top = "0px";
+    panel.style.pointerEvents = "none";
 
     const panelRect = panel.getBoundingClientRect();
     let left = rect.right;
@@ -67,6 +70,10 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
     panel.style.left = `${left}px`;
     panel.style.top = `${top}px`;
     flyoutCategory = categoryKey;
+    flyoutOpenedAt = Date.now();
+    setTimeout(() => {
+      if (panel === flyout) panel.style.pointerEvents = "auto";
+    }, 80);
   }
 
   let lastByCategory = {};
@@ -138,6 +145,12 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
         openFlyout(items, toggle, key);
       });
 
+      appsList.addEventListener("click", (e) => {
+        const isCategory = e.target.closest("[data-category]");
+        if (isCategory) return;
+        if (flyoutCategory) closeFlyout();
+      });
+
       appsList.addEventListener("mousemove", (e) => {
         const toggle = e.target.closest("[data-category]");
         if (!toggle) return;
@@ -161,6 +174,10 @@ export function createAppsMenu({ savedAppsList, appsList, appsConfig }){
       document.addEventListener("click", (e) => {
         if (!flyout) return;
         if (e.target.closest(".menu-flyout")) {
+          if (Date.now() - flyoutOpenedAt < 200) {
+            e.stopPropagation();
+            return;
+          }
           const appRow = e.target.closest("[data-app]");
           if (appRow) {
             emitOpen(appRow.getAttribute("data-app"));
