@@ -84,8 +84,33 @@ async function boot(){
   appsMenu.renderAppsMenu();
   appsMenu.renderSavedApps();
 
-  const firstBoot = localStorage.getItem(BOOT_KEY) !== "1";
-  wm.createFilesWindow();
+  const startupLayout = [
+    { create: () => wm.createFilesWindow(), pos: { left: 32, top: 32 } },
+    { create: () => wm.createNotesWindow(), pos: { left: 276, top: 88 } },
+    { create: () => wm.createThemesWindow(), pos: { left: 520, top: 144 } },
+  ];
+
+  function clamp(value, min, max){
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function positionWindow(id, target){
+    if (!target || !id) return;
+    const win = document.querySelector(`[data-id="${id}"]`);
+    if (!win || !desktop) return;
+    const maxLeft = Math.max(0, desktop.clientWidth - win.offsetWidth);
+    const maxTop = Math.max(0, desktop.clientHeight - win.offsetHeight);
+    const left = Number.isFinite(target.left) ? target.left : win.offsetLeft;
+    const top = Number.isFinite(target.top) ? target.top : win.offsetTop;
+    win.style.left = `${clamp(left, 0, maxLeft)}px`;
+    win.style.top = `${clamp(top, 0, maxTop)}px`;
+  }
+
+  const startupWindows = startupLayout.map(entry => {
+    const id = entry.create();
+    return { id, pos: entry.pos };
+  });
+  startupWindows.forEach(win => positionWindow(win.id, win.pos));
 
   const toast = document.getElementById("toast");
   const toastBody = document.getElementById("toastBody");

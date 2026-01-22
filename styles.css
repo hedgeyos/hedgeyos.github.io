@@ -35,6 +35,19 @@
       --icon-size: 34px;
     }
 
+    @font-face{
+      font-family: "EnvyCodeRNerd";
+      src: url("fonts/EnvyCodeRNerdFont-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face{
+      font-family: "EnvyCodeRNerd";
+      src: url("fonts/EnvyCodeRNerdFont-Bold.ttf") format("truetype");
+      font-weight: 700;
+      font-style: normal;
+    }
+
     body.dark{
       --os-bg: #1f232a;
       --os-face: #2c313a;
@@ -102,6 +115,7 @@
 
       --inactive-top: #fff2bd;
       --inactive-bot: #f4e3a6;
+      font-family: "EnvyCodeRNerd","ChicagoKare","ChiKareGo2Web","Chicago","Charcoal","Geneva","Tahoma",system-ui,sans-serif;
     }
 
     body.hedgeyOS.dark{
@@ -125,6 +139,7 @@
 
       --inactive-top: #5a4a1c;
       --inactive-bot: #473b15;
+      font-family: "EnvyCodeRNerd","ChicagoKare","ChiKareGo2Web","Chicago","Charcoal","Geneva","Tahoma",system-ui,sans-serif;
     }
 
     body.system7{
