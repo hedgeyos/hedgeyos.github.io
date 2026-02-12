@@ -173,13 +173,13 @@
       {
         title: "Spin Up the NAS VM",
         body: "Imagine provisioning a tiny storage closet in the cloud. This VM will be the closet everyone borrows from.",
-        code: "multipass launch 24.04 --name nas --cpus 2 --mem 2G --disk 10G",
+        code: "multipass launch 22.04 --name nas --cpus 2 --mem 2G --disk 10G",
         cmds: ["multipass launch"]
       },
       {
         title: "Spin Up the App/Client VM",
         body: "Add the office VM that will mount the closet—two rooms, one hallway between them.",
-        code: "multipass launch 24.04 --name web --cpus 2 --mem 2G --disk 10G",
+        code: "multipass launch 22.04 --name web --cpus 2 --mem 2G --disk 10G",
         cmds: ["multipass launch"]
       },
       {

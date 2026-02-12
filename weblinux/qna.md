@@ -14,7 +14,7 @@ Each question maps to the slide number in the trimmed deck. Multiple choice; ans
    C) It’s the only way to run Docker  
    D) It disables networking to be safer
 
-3) (Slide 3) In `multipass launch --name web --cpus 2 --mem 2G --disk 10G 24.04`, what does `--disk 10G` mean?  
+3) (Slide 3) In `multipass launch --name web --cpus 2 --mem 2G --disk 10G 22.04`, what does `--disk 10G` mean?  
    A) Preallocates 10G immediately  
    B) Sets a sparse virtual disk up to 10G  
    C) Limits RAM to 10G  

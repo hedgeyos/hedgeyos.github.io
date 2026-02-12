@@ -17,7 +17,7 @@ General tone for delivery: conversational, empathetic; assume students are new t
 - Helpful extras: `multipass list` (see state/IP), `multipass info web` (details), `multipass shell web` (interactive fallback).
 
 ## Slide 3 – Create the VM
-- Walk through `multipass launch --name web --cpus 2 --mem 2G --disk 10G 24.04`: name, resources, image version.
+- Walk through `multipass launch --name web --cpus 2 --mem 2G --disk 10G 22.04`: name, resources, image version.
 - Note deletion safety: `multipass delete web && multipass purge` to reset if you break things.
 - Common confusion: disk size is sparse; it won’t eat full 10G immediately.
 - Alternative command: `multipass find | head` to show available images; pick LTS for stability.
