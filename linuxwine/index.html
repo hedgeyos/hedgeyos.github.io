@@ -60,31 +60,36 @@
 </head>
 <body>
   <div id="loading">Loading slides...</div>
+  <textarea id="source" style="display:none"></textarea>
   <script src="https://cdn.jsdelivr.net/npm/remark@0.14.0/remark.min.js"></script>
   <script>
     async function start() {
       const loading = document.getElementById('loading');
+      const sourceEl = document.getElementById('source');
       try {
         const res = await fetch('./slides.md', { cache: 'no-store' });
         if (!res.ok) {
           throw new Error('Failed to load slides.md (' + res.status + ')');
         }
         const md = await res.text();
-        const slideSource = md
-          .replace(/^#\s+.*$/m, '')
-          .split(/^##\s+/m)
-          .map((part) => part.trim())
-          .filter(Boolean)
-          .map((part, i) => (i === 0 ? '## ' + part : '---\n## ' + part))
-          .join('\n');
+        // Convert "## Slide ..." sections into remark slide separators.
+        let slideSource = md
+          .replace(/^\uFEFF/, '')
+          .replace(/^#\s+.*\n?/, '')
+          .replace(/\r\n/g, '\n')
+          .replace(/\n##\s+/g, '\n---\n## ');
+        if (!/^##\s+/m.test(slideSource)) {
+          slideSource = md;
+        }
 
-        loading.remove();
+        sourceEl.value = slideSource;
         remark.create({
-          source: slideSource,
+          source: sourceEl.value,
           ratio: '16:9',
           navigation: { scroll: false, touch: true, click: false },
           highlightStyle: 'monokai'
         });
+        loading.remove();
       } catch (err) {
         loading.textContent = 'Error: ' + err.message;
       }
