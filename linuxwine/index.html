@@ -13,13 +13,6 @@
       --code-bg: #10172a;
     }
     html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); }
-    #loading {
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      color: var(--muted);
-    }
     .remark-slide-content {
       font-family: "Segoe UI", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
       background: linear-gradient(160deg, #0b1020 0%, #101831 100%);
@@ -32,13 +25,10 @@
     .remark-slide-content h2,
     .remark-slide-content h3 {
       color: #ffffff;
-      letter-spacing: 0.2px;
       margin-top: 0;
+      letter-spacing: 0.2px;
     }
-    .remark-slide-number {
-      color: var(--muted);
-      opacity: 0.9;
-    }
+    .remark-slide-number { color: var(--muted); opacity: 0.9; }
     .remark-inline-code,
     .remark-code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -46,55 +36,125 @@
       color: #d7e3ff;
       border-radius: 8px;
     }
-    .remark-code {
-      padding: 0.7em;
-      font-size: 0.75em;
-    }
-    .remark-slide-content a {
-      color: var(--accent);
-      text-decoration: none;
-    }
+    .remark-code { padding: 0.7em; font-size: 0.75em; }
+    .remark-slide-content a { color: var(--accent); text-decoration: none; }
     .remark-slide-content ul { margin-top: 0.5em; }
     .remark-slide-content li { margin: 0.25em 0; }
   </style>
 </head>
 <body>
-  <div id="loading">Loading slides...</div>
-  <textarea id="source" style="display:none"></textarea>
+  <textarea id="source" style="display:none">
+
+## Slide 1: Current State
+- Wine is already installed system-wide on this Ubuntu 24.04 lab machine
+- `wine64`, `wine32`, and `winetricks` are present
+- Student users: `maple`, `orbit`, `pebble`, `sunny`, `tiger`
+
+---
+## Slide 2: What Is Already Done
+- `i386` architecture enabled
+- Wine package installed and working
+- Wine prefix initialized for each student at `~/.wine`
+- Verified per user: `wine --version` and `prefix-ok`
+
+---
+## Slide 3: Verified Baseline
+```bash
+wine --version
+```
+
+---
+## Slide 4: Classroom Demo App (Minesweeper)
+- Demo file provided: `Mines-PerfectPortable_1.4.0.4_English.paf.exe`
+- App type: portable Minesweeper game (Mines-Perfect)
+- Purpose in class: verify Wine runs a real Windows `.exe` in each student account
+
+---
+## Slide 5: Where the File Is
+Each student already has a local copy:
+- `~/wineapps/minesweeper/Mines-PerfectPortable_1.4.0.4_English.paf.exe`
+
+---
+## Slide 6: Run the Minesweeper EXE
+As the student user:
+```bash
+wine ~/wineapps/minesweeper/Mines-PerfectPortable_1.4.0.4_English.paf.exe
+```
+
+---
+## Slide 7: Student Workflow (Daily Use)
+- Log in to personal account
+- Keep all Windows app data inside personal prefix (`~/.wine`)
+- Do not install Windows apps into another user's directory
+
+---
+## Slide 8: Prefix Location and Isolation
+- Default prefix: `~/.wine`
+- Windows C drive: `~/.wine/drive_c/`
+- Prefixes are isolated by Linux user permissions
+
+---
+## Slide 9: Winetricks Usage
+Install common dependencies in the current user prefix:
+```bash
+winetricks -q vcrun2022
+winetricks -q corefonts
+```
+Use only in the current student's account.
+
+---
+## Slide 10: Optional Separate Lab Prefix
+If a student needs a clean environment:
+```bash
+export WINEPREFIX="$HOME/.wine-lab"
+export WINEARCH=win64
+wineboot --init
+```
+Then run app with that prefix:
+```bash
+WINEPREFIX="$HOME/.wine-lab" wine ~/wineapps/minesweeper/Mines-PerfectPortable_1.4.0.4_English.paf.exe
+```
+
+---
+## Slide 11: Quick Self-Check
+```bash
+wine --version
+ls ~/wineapps/minesweeper/Mines-PerfectPortable_1.4.0.4_English.paf.exe
+```
+
+---
+## Slide 12: Common Problems
+- App launches then crashes: install required runtime via `winetricks`
+- GUI scaling/audio issues: adjust in `winecfg`
+- Prefix corruption: back up and reinitialize prefix
+
+---
+## Slide 13: Reset a Broken Prefix (Per Student)
+Run as your own user:
+```bash
+mv ~/.wine ~/.wine.bak.$(date +%F-%H%M%S)
+wineboot --init
+```
+
+---
+## Slide 14: Classroom Policy
+- One Linux user per student, no shared prefix
+- Install only course-required components first
+- Keep backup snapshots before major app installs
+
+---
+## Slide 15: Success Criteria (Today)
+- You can run `wine --version`
+- You can launch `Mines-PerfectPortable_1.4.0.4_English.paf.exe`
+- You only work in your own home directory/prefix
+  </textarea>
   <script src="https://cdn.jsdelivr.net/npm/remark@0.14.0/remark.min.js"></script>
   <script>
-    async function start() {
-      const loading = document.getElementById('loading');
-      const sourceEl = document.getElementById('source');
-      try {
-        const res = await fetch('./slides.md', { cache: 'no-store' });
-        if (!res.ok) {
-          throw new Error('Failed to load slides.md (' + res.status + ')');
-        }
-        const md = await res.text();
-        // Convert "## Slide ..." sections into remark slide separators.
-        let slideSource = md
-          .replace(/^\uFEFF/, '')
-          .replace(/^#\s+.*\n?/, '')
-          .replace(/\r\n/g, '\n')
-          .replace(/\n##\s+/g, '\n---\n## ');
-        if (!/^##\s+/m.test(slideSource)) {
-          slideSource = md;
-        }
-
-        sourceEl.value = slideSource;
-        remark.create({
-          source: sourceEl.value,
-          ratio: '16:9',
-          navigation: { scroll: false, touch: true, click: false },
-          highlightStyle: 'monokai'
-        });
-        loading.remove();
-      } catch (err) {
-        loading.textContent = 'Error: ' + err.message;
-      }
-    }
-    start();
+    remark.create({
+      ratio: '16:9',
+      navigation: { scroll: false, touch: true, click: false },
+      highlightStyle: 'monokai'
+    });
   </script>
 </body>
 </html>
