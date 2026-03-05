@@ -75,13 +75,19 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
     }
 
     if (action === "aboutSystem"){
-      wm.createAppWindow("About", defaultApps.about.url);
+      wm.createAppWindow(defaultApps.about?.title || "About Agent1c/HedgeyOS", defaultApps.about?.url || "/apps/about-agent1c/index.html");
     }
     if (action === "newFiles"){
       wm.createFilesWindow();
     }
     if (action === "newNotes"){
       wm.createNotesWindow();
+    }
+    if (action === "arrangeWindows" && typeof wm.arrangeVisibleWindows === "function"){
+      wm.arrangeVisibleWindows();
+    }
+    if (action === "tileWindows" && typeof wm.tileVisibleWindows === "function"){
+      wm.tileVisibleWindows();
     }
 
     if (app) openAppById(app);

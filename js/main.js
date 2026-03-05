@@ -1,11 +1,12 @@
-import { BOOT_KEY } from "./constants.js";
 import { createSaveDialog } from "./save-dialog.js";
 import { createAppsMenu } from "./apps-menu.js";
 import { createWindowManager } from "./wm.js";
 import { initMenuDropdowns, initMenuActions } from "./menubar.js";
 import { saveUpload, hasWrappedKey, setPassphrase, unlockWithPassphrase } from "./filesystem.js";
-import { initThemeToggle, initThemeState, applyTheme, getTheme } from "./theme.js";
+import { initThemeToggle, initThemeState, applyTheme, getTheme, applyWallpaper, getWallpaperName, clearWallpaper } from "./theme.js";
 import { createHud } from "./hud.js";
+import { initAgent1C } from "./agent1c.js";
+import { createVoiceSttController } from "./voice-stt.js";
 
 const menubar = document.getElementById("menubar");
 const desktop = document.getElementById("desktop");
@@ -67,7 +68,7 @@ async function boot(){
     saveDialog,
     appsMenu,
     appsMap,
-    theme: { applyTheme, getTheme },
+    theme: { applyTheme, getTheme, applyWallpaper, getWallpaperName, clearWallpaper },
   });
 
   const hud = createHud({
@@ -81,36 +82,19 @@ async function boot(){
   initThemeToggle({ button: document.getElementById("modebtn") });
   initThemeState();
 
+  const voice = createVoiceSttController({
+    button: document.getElementById("voicebtn"),
+    modal: document.getElementById("voiceModal"),
+    btnYes: document.getElementById("voiceYes"),
+    btnNo: document.getElementById("voiceNo"),
+  });
+  voice.init();
+  window.__agent1cVoiceController = voice;
+
   appsMenu.renderAppsMenu();
   appsMenu.renderSavedApps();
-
-  const startupLayout = [
-    { create: () => wm.createFilesWindow(), pos: { left: 32, top: 32 } },
-    { create: () => wm.createNotesWindow(), pos: { left: 276, top: 88 } },
-    { create: () => wm.createThemesWindow(), pos: { left: 520, top: 144 } },
-  ];
-
-  function clamp(value, min, max){
-    return Math.max(min, Math.min(max, value));
-  }
-
-  function positionWindow(id, target){
-    if (!target || !id) return;
-    const win = document.querySelector(`[data-id="${id}"]`);
-    if (!win || !desktop) return;
-    const maxLeft = Math.max(0, desktop.clientWidth - win.offsetWidth);
-    const maxTop = Math.max(0, desktop.clientHeight - win.offsetHeight);
-    const left = Number.isFinite(target.left) ? target.left : win.offsetLeft;
-    const top = Number.isFinite(target.top) ? target.top : win.offsetTop;
-    win.style.left = `${clamp(left, 0, maxLeft)}px`;
-    win.style.top = `${clamp(top, 0, maxTop)}px`;
-  }
-
-  const startupWindows = startupLayout.map(entry => {
-    const id = entry.create();
-    return { id, pos: entry.pos };
-  });
-  startupWindows.forEach(win => positionWindow(win.id, win.pos));
+  wm.restoreLayoutSession?.();
+  await initAgent1C({ wm });
 
   const toast = document.getElementById("toast");
   const toastBody = document.getElementById("toastBody");
@@ -286,13 +270,6 @@ async function boot(){
     handleDroppedFiles(e.dataTransfer?.files);
   });
 
-  if (firstBoot){
-    const pre = "HedgeyOS was made by Decentricity. Follow me on X!";
-    wm.createNotesWindow({ prefill: pre, forcePrefill: true });
-    localStorage.setItem(BOOT_KEY, "1");
-  } else {
-    wm.createNotesWindow();
-  }
 }
 
 boot();

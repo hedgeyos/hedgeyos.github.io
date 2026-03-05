@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About Agent1c/HedgeyOS</title>
+  <style>
+    :root{
+      --bg: #f6f1de;
+      --panel: #fff9eb;
+      --line: #b9b1a1;
+      --ink: #2f2b2a;
+      --muted: #5f5957;
+      --pink: #efb6ca;
+      --mint: #cfeccf;
+      --sky: #c7e5ff;
+      --sun: #f9df9d;
+      --accent: #c25588;
+    }
+    *{ box-sizing: border-box; }
+    html, body{
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 0%, #fffdf6 0%, var(--bg) 55%, #ebe4d3 100%);
+      color: var(--ink);
+      font: 14px/1.4 "Courier New", "Lucida Console", monospace;
+    }
+    .wrap{
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+    .hero{
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 14px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px;
+      box-shadow: 0 2px 0 #d6cdb8;
+    }
+    .hero img{
+      width: 84px;
+      height: 84px;
+      image-rendering: auto;
+    }
+    h1{
+      margin: 0 0 6px 0;
+      font-size: 22px;
+      line-height: 1.1;
+      letter-spacing: 0.4px;
+    }
+    .sub{
+      color: var(--muted);
+      margin: 0;
+    }
+    .grid{
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 10px;
+    }
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 2px 0 #d6cdb8;
+    }
+    .card h2{
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pill{
+      display: inline-block;
+      border: 1px solid #9f95ab;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #f9f1ff;
+      margin: 0 6px 6px 0;
+      white-space: nowrap;
+    }
+    .steps{
+      margin: 0;
+      padding-left: 18px;
+    }
+    .steps li{ margin: 0 0 6px 0; }
+    .bar{
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+    }
+    .chip{
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 8px;
+      text-align: center;
+      background: var(--panel);
+      box-shadow: 0 2px 0 #d6cdb8;
+      font-weight: 700;
+    }
+    .chip.pink{ background: #fdeaf1; }
+    .chip.mint{ background: #ebfaeb; }
+    .chip.sky{ background: #eaf5ff; }
+    .chip.sun{ background: #fff5da; }
+    .chip.gray{ background: #f0ece3; }
+    a{
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--accent);
+    }
+    a:hover{ border-bottom-style: solid; }
+    .foot{
+      margin-top: 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <img src="/assets/hedgey1.png" alt="Hitomi hedgehog" />
+      <div>
+        <h1>Agent1c.me + HedgeyOS</h1>
+        <p class="sub">A cute local-first agentic OS where Hitomi the hedgehog is deeply integrated into the desktop itself. Runs fully in your browser tab with no backend app server.</p>
+      </div>
+    </section>
+
+    <section class="bar">
+      <div class="chip pink">💬 Chat</div>
+      <div class="chip sky">🧠 Multi-Provider AI</div>
+      <div class="chip mint">🔐 Local Vault</div>
+      <div class="chip sun">❤️ Heartbeat Loop</div>
+      <div class="chip gray">📓 Event Timeline</div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>What This Is</h2>
+        <p>Agent1c.me is an autonomous-agent workspace built on HedgeyOS. Hitomi (the tiny hedgehog) is a full-featured intelligent agent with a fully programmable heartbeat loop.</p>
+        <p>
+          <span class="pill">OpenAI</span>
+          <span class="pill">Anthropic</span>
+          <span class="pill">xAI Grok</span>
+          <span class="pill">z.ai</span>
+          <span class="pill">Ollama Local</span>
+          <span class="pill">Telegram</span>
+        </p>
+      </article>
+
+      <article class="card">
+        <h2>Onboarding Flow</h2>
+        <ol class="steps">
+          <li>Create a local vault passphrase (or skip for now).</li>
+          <li>Add an AI provider key in <strong>AI APIs</strong>.</li>
+          <li>Pick your model.</li>
+          <li>Open chat and start talking with Hitomi.</li>
+          <li>Optionally connect Telegram and local shell relay tools.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Why It Feels Different</h2>
+        <p>This is an OS-like environment, not a single-page chat app. Windows, icons, notes, files, loops, and provider controls are all native parts of the desktop flow.</p>
+        <p>Hitomi can bridge channels like Telegram and can deeply integrate with the host OS through local shell-command relay when enabled.</p>
+        <p>Everything is designed for normal users first: simple setup, direct controls, visible status, and no install-heavy pipeline.</p>
+      </article>
+
+      <article class="card">
+        <h2>Built On HedgeyOS</h2>
+        <p>Agent1c.me reuses HedgeyOS foundations: window manager, themes, local storage model, and desktop shell behavior.</p>
+        <p>Both projects are by Decentricity.</p>
+        <p><a href="https://github.com/agent1c-me/agent1c-me.github.io" target="_blank" rel="noopener noreferrer">View source on GitHub</a></p>
+      </article>
+    </section>
+
+    <p class="foot">Tip: If the tab is open, Hitomi can keep running. If the tab closes, runtime stops.</p>
+  </main>
+</body>
+</html>

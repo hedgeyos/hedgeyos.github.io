@@ -12,10 +12,30 @@
     };
   </script>
   <script src="coi-serviceworker.js"></script>
+  <link rel="icon" type="image/png" href="assets/hedgey1.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body>
+  <script>
+    (function applyBootTheme(){
+      try {
+        var themeKey = "hedgeyos_theme_v1";
+        var darkKey = "hedgeyos_dark_mode";
+        var raw = localStorage.getItem(themeKey) || "hedgeyOS";
+        if (raw === "hedgey") raw = "hedgeyOS";
+        var allowed = { beos: 1, system7: 1, greenscreen: 1, cyberpunk: 1, hedgeyOS: 1 };
+        var theme = allowed[raw] ? raw : "hedgeyOS";
+        var cls = document.body.classList;
+        cls.toggle("beos", theme === "beos");
+        cls.toggle("system7", theme === "system7");
+        cls.toggle("greenscreen", theme === "greenscreen");
+        cls.toggle("cyberpunk", theme === "cyberpunk");
+        cls.toggle("hedgeyOS", theme === "hedgeyOS");
+        cls.toggle("dark", localStorage.getItem(darkKey) === "1");
+      } catch (_) {}
+    })();
+  </script>
   <div class="menubar bevel-out hairline" id="menubar">
     <div class="menu" data-menu="hedgey">
       <span class="menu-label">🦔</span>
@@ -24,7 +44,7 @@
         <div class="menu-item" data-action="toggleHud">HUD</div>
         <div class="menu-item" data-action="openThemes">Themes</div>
         <div class="menu-sep"></div>
-        <div class="menu-item" data-action="aboutSystem">About HedgeyOS</div>
+        <div class="menu-item" data-action="aboutSystem">About Agent1c/HedgeyOS</div>
       </div>
     </div>
 
@@ -53,10 +73,19 @@
       </div>
     </div>
 
+    <div class="menu" data-menu="arrange">
+      <span class="menu-label" data-action="arrangeWindows">Arrange</span>
+    </div>
+
+    <div class="menu" data-menu="tile">
+      <span class="menu-label" data-action="tileWindows">Tile</span>
+    </div>
+
     <div class="menubar-spacer"></div>
     <button class="modebtn hudbtn" id="hudSwitch" title="Switch camera" aria-label="Switch camera">📷</button>
     <button class="modebtn" id="keybtn" title="Key operations" aria-label="Key operations">🔑</button>
     <button class="modebtn" id="modebtn" title="Toggle dark mode" aria-label="Toggle dark mode">☾</button>
+    <button class="modebtn" id="voicebtn" title="Voice wake-word is OFF. Click to turn on." aria-label="Voice wake-word toggle">🎙️</button>
   </div>
 
   <video id="hudFeed" class="hud-feed" autoplay muted playsinline></video>
@@ -145,6 +174,28 @@
     </div>
   </div>
 
+  <div class="modal" id="voiceModal" aria-hidden="true">
+    <div class="dialog bevel-out thick hairline">
+      <div class="dtitle">Enable Voice Wake-Word?</div>
+      <div class="dcontent">
+        <div class="key-hero">
+          <img src="assets/hedgey1.png" alt="Hitomi hedgehog" />
+        </div>
+        <div>
+          This turns on microphone speech recognition with wake words:
+          <strong>agentic</strong>.
+        </div>
+        <div class="notehint" id="voiceCaveat" style="margin-top:8px;">
+          Privacy note: depending on your browser, audio/transcript processing may be sent to your browser vendor service.
+        </div>
+      </div>
+      <div class="dactions">
+        <button class="btn" id="voiceNo">No</button>
+        <button class="btn" id="voiceYes">Yes</button>
+      </div>
+    </div>
+  </div>
+
   <template id="finderTemplate">
     <div class="window bevel-out thick hairline" data-win>
       <div class="titlebar bevel-out hairline" data-titlebar>
@@ -162,8 +213,8 @@
         <aside class="sidebar">
           <div class="section-title">Places</div>
           <ul class="navlist" data-nav>
-            <li class="navitem active"><div class="icon"></div> Applications</li>
-            <li class="navitem"><div class="icon"></div> Encrypted Files</li>
+            <li class="navitem active"><div class="icon"></div> Agentic Root</li>
+            <li class="navitem"><div class="icon"></div> Applications</li>
             <li class="navitem"><div class="icon"></div> System Folder</li>
             <li class="navitem"><div class="icon"></div> Desktop</li>
           </ul>
@@ -245,6 +296,7 @@
         <div class="browserbar">
           <button class="btn" data-back>Back</button>
           <input class="field" data-urlfield type="text" value="about:blank" />
+          <button class="btn browser-route-btn" type="button" data-browser-route title="Relay routing">🖧</button>
           <button class="btn" data-go>Go</button>
           <button class="btn" data-save>Save</button>
         </div>
@@ -324,6 +376,14 @@
             <div class="swatch swatch-main"></div>
             <div class="swatch swatch-accent"></div>
             <div class="swatch swatch-dark"></div>
+          </div>
+          <div class="theme-wallpaper">
+            <div class="theme-wallpaper-title">Wallpaper</div>
+            <button class="theme-wallpaper-current btn" type="button" data-theme-wallpaper-current>(None)</button>
+            <div class="theme-wallpaper-actions">
+              <button class="btn" type="button" data-theme-wallpaper-change>Change...</button>
+              <button class="btn" type="button" data-theme-wallpaper-clear>Clear</button>
+            </div>
           </div>
           <div class="theme-hint">Select a theme to apply it instantly.</div>
         </div>

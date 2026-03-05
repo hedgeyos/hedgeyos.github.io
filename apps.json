@@ -10,7 +10,7 @@
     { "id": "unconnectedChat", "title": "Unconnected AI Chat", "url": "https://chat.unconnected.ai", "section": "apps", "category": "utilities" },
     { "id": "hedgeyTown", "title": "3D Hedgey Town", "url": "https://blueprintwalk.berrry.app/", "section": "apps", "category": "games" },
     { "id": "chordynaut", "title": "Chordynaut", "url": "https://chordynaut.com", "section": "apps", "category": "games" },
-    { "id": "about", "title": "About", "url": "https://decentricity.github.io", "section": "apps", "category": "games" },
+    { "id": "about", "title": "About Agent1c/HedgeyOS", "url": "/apps/about-agent1c/index.html", "section": "apps", "category": "games" },
 
     { "id": "terminal", "title": "DecenTerminal", "url": "https://decentricityos.berrry.app/", "section": "apps", "category": "utilities" },
     { "id": "python", "title": "PythonCity", "url": "https://pythoncity.berrry.app/", "section": "apps", "category": "utilities" },

@@ -43,6 +43,22 @@ export function createDesktopIcons({ iconLayer, desktop }){
     if (kind === "notes") return "📑";
     if (kind === "note") return "📝";
     if (kind === "browser") return "🌐";
+    if (kind === "app" && /(agent1c:|chat|ai apis|openai api|telegram api|loop|config|shell relay|tor relay|soul\.md|tools\.md|heartbeat\.md|events|create vault|unlock vault)/i.test(meta?.title || "")) {
+      const title = (meta?.title || "").toLowerCase();
+      if (title.includes("tor relay")) return "🧅";
+      if (title.includes("shell relay")) return "🖥️";
+      if (title.includes("heartbeat")) return "❤️";
+      if (title.includes("soul")) return "👻";
+      if (title.includes("tools")) return "🧰";
+      if (title.includes("events")) return "📓";
+      if (title.includes("chat")) return "💬";
+      if (title.includes("ai apis") || title.includes("openai")) return "🧠";
+      if (title.includes("telegram")) return "✈️";
+      if (title.includes("config") || title.includes("loop")) return "🛠️";
+      if (title.includes("create vault")) return "🗝️";
+      if (title.includes("unlock")) return "🔓";
+      return "👁️";
+    }
     if (kind === "app" && /terminal/i.test(meta?.title || "")) return "⌨️";
     if (kind === "file") {
       const type = (meta?.type || "").toLowerCase();
@@ -60,36 +76,51 @@ export function createDesktopIcons({ iconLayer, desktop }){
   function ensureIcon(id, title, kind, meta, onClick){
     let el = icons.get(id);
     if (!el){
-      el = document.createElement("div");
-      el.className = "desk-icon";
+      el = buildIconElement(title, kind, meta);
       el.dataset.winId = id;
-
-      const glyph = document.createElement("div");
-      glyph.className = "glyph";
-      el.appendChild(glyph);
-
-      const label = document.createElement("div");
-      label.className = "label";
-      const l1 = document.createElement("div");
-      l1.className = "line";
-      const l2 = document.createElement("div");
-      l2.className = "line";
-      label.appendChild(l1);
-      label.appendChild(l2);
-      el.appendChild(label);
-
       el.addEventListener("click", (e) => { e.stopPropagation(); onClick?.(id); });
 
       iconLayer.appendChild(el);
       icons.set(id, el);
     }
 
-    el.querySelector(".glyph").textContent = glyphForKind(kind, meta);
+    applyIconFace(el, title, kind, meta);
+    return el;
+  }
+
+  function applyIconFace(el, title, kind, meta){
+    const glyphEl = el.querySelector(".glyph");
+    glyphEl.innerHTML = "";
+    if (meta?.iconImage) {
+      const img = document.createElement("img");
+      img.src = meta.iconImage;
+      img.alt = `${title || "Icon"} icon`;
+      glyphEl.appendChild(img);
+    } else {
+      glyphEl.textContent = meta?.glyph || glyphForKind(kind, meta);
+    }
     const [a, b] = splitTitleTwoLines(title);
     const lines = el.querySelectorAll(".line");
     lines[0].textContent = a;
     lines[1].textContent = b;
+  }
 
+  function buildIconElement(title, kind, meta){
+    const el = document.createElement("div");
+    el.className = "desk-icon";
+    const glyph = document.createElement("div");
+    glyph.className = "glyph";
+    el.appendChild(glyph);
+    const label = document.createElement("div");
+    label.className = "label";
+    const l1 = document.createElement("div");
+    l1.className = "line";
+    const l2 = document.createElement("div");
+    l2.className = "line";
+    label.appendChild(l1);
+    label.appendChild(l2);
+    el.appendChild(label);
+    applyIconFace(el, title, kind, meta);
     return el;
   }
 
@@ -116,5 +147,5 @@ export function createDesktopIcons({ iconLayer, desktop }){
     }
   }
 
-  return { render, removeIcon };
+  return { render, removeIcon, buildIconElement };
 }

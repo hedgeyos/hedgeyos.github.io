@@ -1,160 +1,187 @@
-# HedgeyOS
+# Agent1c.me
 
-A sophisticated Mac OS 9-inspired web desktop environment that runs entirely in your browser. HedgeyOS recreates the classic desktop experience with modern web technologies, featuring window management, an application ecosystem, encrypted file storage, and comprehensive theming.
+Agent1c.me is a serverless, AI-enabled browser OS built on HedgeyOS (`hedgeyos.github.io`).
 
-## 🌟 Features
+It runs entirely inside a browser tab with no app server. If the tab stays open, Hitomi can keep running autonomous loops and can control a Telegram bot through the configured Bot API token. If the tab closes, runtime stops.
 
-### Desktop Environment
-- **Full Window Management**: Create, drag, resize, minimize, and maximize windows
-- **Menu Bar System**: Apple-style menu with system, file, and apps menus
-- **Desktop Icons**: Clickable application shortcuts with organized layout
-- **Theme System**: Multiple OS-inspired themes with dark mode variants
+No logins, no installations, just API attach.
 
-### Application Ecosystem
-- **Built-in Apps**:
-  - **Files**: Encrypted file manager with IndexedDB storage
-  - **Notes**: Text editor with auto-save functionality
-  - **Browser**: Web browser with navigation controls
-  - **Themes**: Visual theme switcher interface
-  - **Terminal**: Web-based terminal with xterm.js
+## What It Is
 
-- **External Apps** (via `apps.json`):
-  - Games: Flipside, 3D Hedgey Town, Chordynaut, Tetris3D
-  - Utilities: DecenTerminal, PythonCity, RSS Reader
-  - Media: HedgeyTube (advanced YouTube/Spotify/SoundCloud player)
+- Local-first autonomous agent workspace inside a retro web desktop
+- Bring Your Own Keys (BYOK): OpenAI, Anthropic, xAI (Grok), z.ai, and Telegram credentials are user-provided
+- Vault encryption in-browser for stored provider credentials
+- Direct provider calls from browser to provider APIs
+- No backend required for MVP
 
-### Security & Storage
-- **Client-Side Encryption**: All files encrypted using Web Crypto API
-- **Secure Storage**: IndexedDB with AES encryption and optional passphrase protection
-- **Sandboxed Apps**: External applications loaded in secure iframes
-- **Cross-Origin Isolation**: Enhanced security via COI service worker
+## Built On HedgeyOS
 
-### Media & Integration
-- **HedgeyTube**: Sophisticated media player with URL detection and playlist management
-- **Embed Conversion**: Smart parsing of video/playlist URLs from YouTube, Spotify, SoundCloud
-- **AR Overlay**: Camera integration via HUD for augmented reality features
+This project is built on HedgeyOS and reuses its browser OS foundations:
 
-## 🏗️ Architecture
+- Window manager and desktop shell
+- Menubar and app-launch model
+- Theme system
+- IndexedDB-backed local persistence patterns
 
-### Tech Stack
-- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3 (no frameworks)
-- **Storage**: IndexedDB + LocalStorage with encryption layer
-- **Security**: Cross-Origin Isolation, Web Crypto API
-- **Fonts**: EnvyCodeR Nerd Font for terminal aesthetic
+Agent1c.me and HedgeyOS are both by Decentricity.
 
-### Modular Structure
-```
-js/
-├── main.js              # Application orchestrator
-├── wm.js                # Window Manager (core UI)
-├── filesystem.js        # Encrypted storage layer
-├── apps-menu.js         # Application launcher
-├── menubar.js           # Top menu bar functionality
-├── theme.js             # Theme switching and management
-└── [specialized modules]
-```
+## Core Capabilities
 
-### Theme System
-- **OS 9 Classic**: Default Mac OS 9-inspired theme
-- **System 7**: Earlier Mac OS aesthetic
-- **BeOS**: BeOS-inspired yellow titlebar theme
-- **HedgeyOS**: Custom pink-themed variant
-- **Dark Modes**: Night themes for all variants
-- **Cyberpunk Red**: Futuristic dark theme
-- **Greenscreen**: Terminal-style monochrome
+- Top-level agent windows in HedgeyOS (Chat, AI APIs, Telegram API, Loop, SOUL.md, TOOLS.md, heartbeat.md, Events)
+- Dedicated `Shell Relay` window (separate from Config) for localhost shell bridge setup and controls
+- Local threaded chat with rolling context
+- Per-thread memory for local chats
+- Per-chat-id memory isolation for Telegram chats
+- Heartbeat loop and event timeline
+- Tile and Arrange window controls in the menubar
+- Multi-provider runtime routing:
+  - OpenAI (`https://api.openai.com/v1/chat/completions`)
+  - Anthropic (`https://api.anthropic.com/v1/messages`)
+  - xAI Grok (`https://api.x.ai/v1/chat/completions`)
+  - z.ai (`https://open.bigmodel.cn/api/paas/v4/chat/completions`)
 
-## 🚀 Getting Started
+## Onboarding Flow
 
-### Local Development
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/hedgeyos/hedgeyos.github.io.git
-   cd hedgeyos.github.io
-   ```
+1. First load: only `Create Vault` is shown.
+2. After vault creation: `OpenAI API` and `Events` are shown.
+3. User must complete OpenAI setup:
+   - Save encrypted OpenAI key
+   - Test OpenAI connection
+   - Save OpenAI settings (model and temperature)
+4. After setup is complete, OpenAI window minimizes and the rest of the agent workspace appears.
+5. Telegram setup is optional, but required for Telegram bot bridging.
 
-2. Serve locally:
-   ```bash
-   python3 -m http.server 8000
-   # or use any static server
-   ```
+## Security Model (MVP)
 
-3. Open `http://localhost:8000` in your browser
+- Credentials are encrypted at rest in-browser
+- Vault unlock is passphrase-based
+- No third-party app login flow required for MVP
+- Provider secrets are not sent to any agent1c server because there is no agent1c server in this architecture
 
-### Direct Access
-You can also open `index.html` directly in your browser, though some features may require a server context.
+## Runtime Notes
 
-## 🌐 Live Demo
+- Agent runtime is tab-bound.
+- Locking vault protects secret access, while loop intent can continue and resume API work after unlock.
+- Telegram bridge runs only when enabled and when required credentials are available.
 
-Visit the live site at [https://hedgeyos.github.io](https://hedgeyos.github.io)
+## Shell Relay (Phase 1)
 
-## 📱 Mobile Support
+- `Shell Relay` is a separate HedgeyOS window, not a Config subsection.
+- It provides OS-first setup instructions (Linux, macOS, Android) with copyable code blocks.
+- Relay runtime is shell-only in this phase:
+  - `shell-relay/install.sh`
+  - `shell-relay/agent1c-relay.sh`
+  - `shell-relay/handler.sh`
+- New tool in TOOLS: `shell_exec`.
 
-HedgeyOS includes responsive design adaptations for tablet and mobile devices, with touch-friendly interface modifications.
+### Tor Relay (HTTP fetch transport option)
 
-## 🔧 Configuration
+- `Tor Relay` is a separate HedgeyOS window in `.me` that mirrors the Shell Relay UX.
+- v1 scope:
+  - Linux + macOS setup only
+  - uses the same localhost relay runtime
+  - runs as a separate relay instance (default `127.0.0.1:8766`) so Shell Relay can stay online on `8765`
+  - Tor routing applies to relay HTTP fetch path only
+  - shell command execution remains local and unchanged
+- Relay scripts support proxy mode via:
+  - `AGENT1C_RELAY_HTTP_PROXY=socks5h://127.0.0.1:9050`
+- Relay exposes `GET /v1/tor/status` for Tor verification checks.
 
-### Adding External Apps
-Edit `apps.json` to add new web applications to the desktop environment. Apps are loaded via iframes with secure sandboxing.
+## AI Provider Architecture
 
-### Custom Themes
-Themes are managed through CSS custom properties in `styles.css`. New themes can be added by defining color variable sets.
+- Provider setup is unified in the `AI APIs` window:
+  - Select a provider card
+  - Save encrypted key
+  - Provider key validation runs immediately
+  - On success, provider can become active
+  - Model selection is stored per provider
+- Active provider controls local chat, heartbeat responses, and Telegram replies.
+- Onboarding continues when at least one AI provider key is valid.
 
-## 🛡️ Security Features
+## Grok Integration Notes
 
-- **Client-Side Encryption**: All user data encrypted before storage
-- **Key Management**: Optional passphrase protection with key wrapping
-- **Cross-Origin Isolation**: Prevents certain web-based attack vectors
-- **Sandboxed Applications**: External apps isolated from main system
+- xAI (Grok) is fully wired, not preview-only.
+- Supported fallback models currently shown in UI:
+  - `grok-4`
+  - `grok-3`
+  - `grok-3-mini`
+- Key validation is live using xAI API calls.
+- xAI status and key/model controls follow the same card behavior as Anthropic and z.ai.
 
-## 📦 Deployment
+## How To Add Another Provider
 
-### Local Hosting
-HedgeyOS can be hosted locally using any static web server:
+1. Add provider state fields (`key`, `model`, `validated`) to preview/provider state.
+2. Add provider card UI in `AI APIs` window and wire card DOM IDs.
+3. Add provider chat function (endpoint + headers + response parsing).
+4. Add provider validation function and include it in `validateProviderKey(...)`.
+5. Include provider in:
+   - provider normalization
+   - display name mapping
+   - active runtime secret resolution
+   - provider badge/pill refresh
+   - onboarding key checks
+   - lock/unlock UI disable handling
+6. Route chat/heartbeat/Telegram through the unified provider runtime path.
+7. Keep wording aligned: avoid "Preview" once provider is fully wired.
+
+## Local Run
 
 ```bash
-# Python 3
+cd agent1c-me.github.io
 python3 -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
-
-# Node.js
-npx serve .
-
-# PHP
-php -S localhost:8000
 ```
 
-Then visit `http://localhost:8000` in your browser.
+Open `http://localhost:8000`.
 
-### GitHub Pages
-The repository is configured for GitHub Pages deployment:
-1. Enable Pages on the default branch
-2. Site becomes available at `https://hedgeyos.github.io`
+## Live
 
-### Static Hosting
-Any static file hosting service can serve HedgeyOS - no build process required. This includes:
-- Netlify, Vercel, or similar platforms
-- Apache/Nginx servers
-- CDN services
-- Local network hosting
+- Production domain: `https://agent1c.me`
+- GitHub Pages repo: `https://github.com/agent1c-me/agent1c-me.github.io`
 
-## 🤝 Contributing
+## Development Notes
 
-HedgeyOS is built with vanilla web technologies and follows a modular architecture. Contributions are welcome for:
-- New applications and features
-- Theme improvements
-- Mobile experience enhancements
-- Security optimizations
+- Vanilla HTML, CSS, and JavaScript (no npm dependency chain)
+- Changes should preserve HedgeyOS baseline behavior unless intentionally modified
+- Integration notes and guardrails are documented in `agents.md`
 
-## 📄 License
+## Cross-Repo Diff Map
 
-This project maintains the same license as the original repository.
+- `.me` vs `.ai` behavior map (sovereign reference): `LOCAL_VS_CLOUD_DIFF.md`
+- Reciprocal map in cloud repo: `../agent1c-ai.github.io/CLOUD_VS_LOCAL_DIFF.md`
 
-## 🔮 Future Development
+## Proxy Browsing Status (Existing vs Next)
 
-- Enhanced application ecosystem
-- Advanced file management features
-- Improved mobile experience
-- Additional theme variants
-- Performance optimizations 
+### Existing features (implemented)
+
+- Hedgey Browser has relay routing controls with route modes:
+  - `🖧` direct first + Shell Relay fallback
+  - `🧅` direct first + Tor Relay fallback
+  - purple `🧅` Tor-first/force mode
+- Shell Relay (`8765`) and Tor Relay (`8766`) can run at the same time.
+- `Use Experimental Web Proxy` toggle exists in both Shell Relay and Tor Relay windows and stays synced.
+- Relay supports full-proxy endpoints:
+  - `GET /v1/proxy/page`
+  - `GET /v1/proxy/asset`
+- Browser can use proxy page mode as relay fallback (experimental proxy ON).
+- Proxy rewriting currently supports:
+  - canonical link click handoff (browser field stays on real target URL)
+  - universal GET form-submit bridge (including scripted submit paths)
+  - `srcset` rewriting
+  - CSS `url(...)` and `@import` rewriting
+- Proxy hardening already applied:
+  - recursive proxy rewrite guards
+  - canonical form action handling (avoid `/v1/proxy/page?...` without `url=`)
+  - no browser-side double-fetch preflight (Yahoo regression avoided)
+
+### To be implemented for proxy browsing (next phase)
+
+- P2.2 anti-bot detection + HedgeyOS-native warning dialog on proxy path (single-fetch only).
+- Proxy status/title UX polish after proxied navigation and form submits.
+- Saved-app proxy correctness:
+  - always store original URL
+  - reopen via current route mode without blank-app regressions.
+- More compatibility work for complex sites:
+  - graceful POST form behavior
+  - redirect/canonicalization edge cases
+  - additional asset/CSS rewrite edge cases
+- Later (shared with `.ai` design): full Cloudflare Worker proxy backend for managed browsing transport.
