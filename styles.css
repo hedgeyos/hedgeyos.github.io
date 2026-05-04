@@ -213,7 +213,7 @@
 
     @font-face{
       font-family: "ChicagoKare";
-      src: url("fonts/ChicagoKare-Regular.woff2") format("woff2");
+      src: local("Chicago"), local("Charcoal"), local("Geneva");
       font-display: swap;
     }
 
