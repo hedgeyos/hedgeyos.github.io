@@ -444,6 +444,42 @@
     .modebtn.voice-off{
       opacity: 0.9;
     }
+    .solana-btn{
+      width: 28px;
+      padding: 0 3px;
+    }
+    .solana-logo{
+      width: 17px;
+      height: 13px;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .solana-logo span{
+      display: block;
+      height: 3px;
+      border-radius: 999px;
+      background: #777;
+      transform: skewX(-16deg);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.16);
+    }
+    .solana-logo span:nth-child(2){
+      transform: skewX(16deg);
+    }
+    .solana-disconnected{
+      opacity: 0.55;
+      filter: grayscale(1);
+    }
+    .solana-connected{
+      opacity: 1;
+      filter: none;
+      background: #f7fff3;
+      border-right-color: #20c997;
+      border-bottom-color: #8d4bff;
+    }
+    .solana-connected .solana-logo span{
+      background: linear-gradient(90deg, #14f195, #80ecff 48%, #9945ff);
+    }
 
     /* ===== Desktop area ===== */
     .desktop{
@@ -1746,6 +1782,11 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
+.agent-panel[data-panel-id="solana-wallet"],
+.agent-panel[data-panel-id="solana-tools"]{
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 .agent-panel[data-panel-id="openai"] .agent-stack{
   overflow: visible;
   min-height: max-content;
@@ -2129,6 +2170,36 @@
   font-family: "Monaco", "Consolas", "Courier New", monospace;
   font-size: 11px;
   line-height: 1.35;
+}
+.solana-panel{
+  gap: 8px;
+}
+.solana-panel-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(20,241,149,0.14), rgba(153,69,255,0.14));
+  padding: 7px;
+}
+.solana-panel-title{
+  font-size: 13px;
+  font-weight: 700;
+}
+.solana-wallet-card{
+  display: grid;
+  gap: 7px;
+}
+.solana-address-field{
+  font-family: "Monaco", "Consolas", "Courier New", monospace;
+  font-size: 10px;
+}
+.solana-output{
+  min-height: 92px;
+  border: 1px solid var(--line);
+  background: #0c1018;
+  color: #d3ffe0;
 }
 .agent-terminal-row{
   display: grid;

@@ -12,6 +12,7 @@ No logins, no installations, just API attach.
 - Bring Your Own Keys (BYOK): OpenAI, Anthropic, xAI (Grok), z.ai, and Telegram credentials are user-provided
 - Vault encryption in-browser for stored provider credentials
 - Direct provider calls from browser to provider APIs
+- Solana wallet detection, taskbar status, RPC tools, devnet airdrop, SPL token inspection, and wallet-approved SOL/USDC demo transfers
 - No backend required for MVP
 
 ## Built On HedgeyOS
@@ -29,6 +30,7 @@ Agent1c.me and HedgeyOS are both by Decentricity.
 
 - Top-level agent windows in HedgeyOS (Chat, AI APIs, Telegram API, Loop, SOUL.md, TOOLS.md, heartbeat.md, Events)
 - Dedicated `Shell Relay` window (separate from Config) for localhost shell bridge setup and controls
+- Solana Wallet and Solana Tools windows for wallet connection, balance/token reads, devnet airdrop, and demo transactions
 - Local threaded chat with rolling context
 - Per-thread memory for local chats
 - Per-chat-id memory isolation for Telegram chats
@@ -73,6 +75,15 @@ Agent1c.me and HedgeyOS are both by Decentricity.
   - `shell-relay/agent1c-relay.sh`
   - `shell-relay/handler.sh`
 - New tool in TOOLS: `shell_exec`.
+
+## Solana Integration (Hackathon MVP)
+
+- A Solana taskbar badge is present in HedgeyOS. It stays grey while disconnected and turns on when a wallet is connected.
+- Browser wallet detection runs on page load in parallel with the existing Agent1c first-load/onboarding flow.
+- Wallet selection is automatic. The runtime prefers an already-connected wallet, then the last-used wallet, then installed providers such as Phantom, Solflare, Backpack, Glow, or generic injected Solana providers.
+- The `Solana Wallet` window shows provider, address, cluster, and SOL balance.
+- The `Agent1c Solana Tools` window supports balance reads, SPL token account inspection, devnet airdrop, wallet-approved SOL transfers, and wallet-approved USDC transfers.
+- Agent tools are documented in `TOOLS.md`: `solana_wallet`, `solana_balance`, `solana_tokens`, `solana_airdrop`, `solana_send_sol`, and `solana_send_usdc`.
 
 ### Tor Relay (HTTP fetch transport option)
 
@@ -127,7 +138,7 @@ Agent1c.me and HedgeyOS are both by Decentricity.
 ## Local Run
 
 ```bash
-cd agent1c-me.github.io
+cd hedgeyos.github.io
 python3 -m http.server 8000
 ```
 
@@ -136,7 +147,7 @@ Open `http://localhost:8000`.
 ## Live
 
 - Production domain: `https://agent1c.me`
-- GitHub Pages repo: `https://github.com/agent1c-me/agent1c-me.github.io`
+- GitHub Pages repo: `https://github.com/hedgeyos/hedgeyos.github.io`
 
 ## Development Notes
 

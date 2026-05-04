@@ -2186,25 +2186,53 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     if (["files", "file"].includes(norm)) return createFilesWindow();
     if (["browser", "web", "webbrowser"].includes(norm)) return createBrowserWindow();
     if (["notes", "note"].includes(norm)) return createNotesWindow();
+    if (["solanawallet", "solana"].includes(norm)) {
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: raw, action: "solanaWallet" } }));
+      return "action:solanaWallet";
+    }
+    if (["solanatools", "solanarpc", "solanatool"].includes(norm)) {
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: raw, action: "solanaTools" } }));
+      return "action:solanaTools";
+    }
 
     const entries = Object.entries(appsMap || {});
     const saved = loadSavedApps();
     const byIdExact = entries.find(([id]) => String(id || "").toLowerCase() === key);
+    if (byIdExact && byIdExact[1]?.action) {
+      const [id, app] = byIdExact;
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: id, action: app.action } }));
+      return `action:${app.action}`;
+    }
     if (byIdExact && byIdExact[1]?.url) {
       const [id, app] = byIdExact;
       return createAppWindow(app.title || id, app.url);
     }
     const byIdNorm = entries.find(([id]) => String(id || "").toLowerCase().replace(/[^a-z0-9]/g, "") === norm);
+    if (byIdNorm && byIdNorm[1]?.action) {
+      const [id, app] = byIdNorm;
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: id, action: app.action } }));
+      return `action:${app.action}`;
+    }
     if (byIdNorm && byIdNorm[1]?.url) {
       const [id, app] = byIdNorm;
       return createAppWindow(app.title || id, app.url);
     }
     const byTitleExact = entries.find(([, app]) => String(app?.title || "").toLowerCase() === key);
+    if (byTitleExact && byTitleExact[1]?.action) {
+      const [id, app] = byTitleExact;
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: id, action: app.action } }));
+      return `action:${app.action}`;
+    }
     if (byTitleExact && byTitleExact[1]?.url) {
       const [id, app] = byTitleExact;
       return createAppWindow(app.title || id, app.url);
     }
     const byTitleNorm = entries.find(([, app]) => String(app?.title || "").toLowerCase().replace(/[^a-z0-9]/g, "") === norm);
+    if (byTitleNorm && byTitleNorm[1]?.action) {
+      const [id, app] = byTitleNorm;
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: id, action: app.action } }));
+      return `action:${app.action}`;
+    }
     if (byTitleNorm && byTitleNorm[1]?.url) {
       const [id, app] = byTitleNorm;
       return createAppWindow(app.title || id, app.url);
@@ -2216,6 +2244,11 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
     if (byTitleContains && byTitleContains[1]?.url) {
       const [id, app] = byTitleContains;
       return createAppWindow(app.title || id, app.url);
+    }
+    if (byTitleContains && byTitleContains[1]?.action) {
+      const [id, app] = byTitleContains;
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", { detail: { appId: id, action: app.action } }));
+      return `action:${app.action}`;
     }
 
     const savedExact = saved.find(app => String(app?.name || "").toLowerCase() === key);
@@ -2236,6 +2269,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       id: String(id || ""),
       title: String(app?.title || id || ""),
       url: String(app?.url || ""),
+      action: String(app?.action || ""),
       source: "builtin",
     }));
     const saved = loadSavedApps().map((app, i) => ({
@@ -2244,7 +2278,7 @@ export function createWindowManager({ desktop, iconLayer, templates, openWindows
       url: String(app?.url || ""),
       source: "saved",
     }));
-    return [...base, ...saved].filter(app => app.title && app.url);
+    return [...base, ...saved].filter(app => app.title && (app.url || app.action));
   }
 
   function openUrlInBrowser(url, opts = {}){

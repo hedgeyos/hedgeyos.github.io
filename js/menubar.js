@@ -45,6 +45,10 @@ export function initMenuActions({ menubar, wm, appsMenu, defaultApps, hud }){
       wm.createBrowserWindow();
     } else if (appId === "notes"){
       wm.createNotesWindow();
+    } else if (defaultApps[appId]?.action){
+      window.dispatchEvent(new CustomEvent("hedgey:app-action", {
+        detail: { appId, action: defaultApps[appId].action },
+      }));
     } else if (defaultApps[appId]){
       wm.createAppWindow(defaultApps[appId].title, defaultApps[appId].url);
     }

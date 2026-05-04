@@ -7,6 +7,7 @@ import { initThemeToggle, initThemeState, applyTheme, getTheme, applyWallpaper, 
 import { createHud } from "./hud.js";
 import { initAgent1C } from "./agent1c.js";
 import { createVoiceSttController } from "./voice-stt.js";
+import { initSolanaIntegration } from "./solana.js";
 
 const menubar = document.getElementById("menubar");
 const desktop = document.getElementById("desktop");
@@ -30,7 +31,7 @@ function toAppsMap(appsConfig){
   const map = {};
   for (const app of appsConfig.apps || []){
     if (!app || !app.id) continue;
-    map[app.id] = { title: app.title || app.id, url: app.url || "" };
+    map[app.id] = { title: app.title || app.id, url: app.url || "", action: app.action || "" };
   }
   return map;
 }
@@ -93,6 +94,7 @@ async function boot(){
 
   appsMenu.renderAppsMenu();
   appsMenu.renderSavedApps();
+  initSolanaIntegration({ wm, button: document.getElementById("solanaBtn") });
   wm.restoreLayoutSession?.();
   await initAgent1C({ wm });
 

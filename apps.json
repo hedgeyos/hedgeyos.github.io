@@ -4,6 +4,8 @@
     { "id": "files", "title": "Files", "section": "system", "category": "system" },
     { "id": "browser", "title": "Browser", "section": "system", "category": "top" },
     { "id": "notes", "title": "Notes", "section": "system", "category": "utilities" },
+    { "id": "solanaWallet", "title": "Solana Wallet", "section": "apps", "category": "utilities", "action": "solanaWallet" },
+    { "id": "solanaTools", "title": "Solana Tools", "section": "apps", "category": "utilities", "action": "solanaTools" },
 
     { "id": "flipsideClassic", "title": "Flipside classic", "url": "https://flipside.ink", "section": "apps", "category": "games" },
     { "id": "flipside3d", "title": "Flipside 3D", "url": "https://cubewalker.berrry.app", "section": "apps", "category": "games" },
